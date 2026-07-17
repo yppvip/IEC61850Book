@@ -67,6 +67,33 @@
 
 后续新增工作应由用户确认具体优先级；仍须遵循“每次扩充同步首页、术语索引、离线使用说明，并校验相关链接和 `related` 引用”的交付要求。
 
+## 当前新增任务：IEC 61850 报文解析（2026-07-17）
+
+本轮新增任务明确：在现有离线百科基础上，增加面向开发人员的 IEC 61850 报文解析专题，覆盖 MMS、GOOSE、SV/SMV 报文如何组织、字段如何编码、抓包后如何逐层分析。目标读者应能通过文档理解报文中每个字节或字段的含义，并能据此实现解析器、排障工具或 Wireshark 抓包分析流程。
+
+新增内容应保持工程化、可验证、可离线阅读：
+
+- 新增专题页面建议放在 `outputs/chapters/packet-analysis.html`，必要时可拆分为 `mms-packet-analysis.html`、`goose-packet-analysis.html`、`sv-packet-analysis.html` 等子页。
+- 首页 `outputs/index.html`、离线说明 `outputs/README.md`、术语索引 `outputs/data/terms.js` 必须同步更新。
+- 继续保留中文解释与英文协议字段名、ASN.1 类型名、Wireshark 字段名、EtherType、APPID、TLV、PDU、APDU 等原文。
+- 所有示例报文使用原创或脱敏样例；可以使用十六进制字节流、逐字节偏移表、字段树和解析伪代码，但不得逐字复刻受版权保护标准正文。
+- 明确区分“链路层字段”“IEC 61850-8-1 MMS/报告相关字段”“IEC 61850-8-1 GOOSE 字段”“IEC 61850-9-2 SV/SMV 字段”“ASN.1/BER 编码规则”“Wireshark 展示字段”和“由 SCL 推导出的工程语义”。
+- 对私有扩展、厂商特定数据集、非标准抓包现象只说明识别方法和排查边界，没有资料时不猜测业务含义。
+
+建议执行步骤：
+
+1. **报文总览与抓包入口**：说明 IEC 61850 报文在以太网、VLAN、TCP、MMS、GOOSE、SV 中的位置；给出 Wireshark 过滤表达式、常见端口/EtherType、抓包前检查项。
+2. **编码基础**：解释大端字节序、Ethernet/VLAN 头、TLV、ASN.1 BER 长度编码、布尔/整数/位串/八位串/可见字符串/UTC 时间等基础编码。
+3. **GOOSE 逐字节解析**：覆盖 Ethernet Header、可选 VLAN Tag、EtherType `0x88B8`、APPID、Length、Reserved、GOOSE PDU、`gocbRef`、`timeAllowedToLive`、`datSet`、`goID`、`t`、`stNum`、`sqNum`、`test`、`confRev`、`ndsCom`、`numDatSetEntries`、`allData`，并结合 SCL 中 `GSEControl`、`DataSet`、`FCDA` 建立字段含义。
+4. **SV/SMV 逐字节解析**：覆盖 EtherType `0x88BA`、APPID、Length、Reserved、ASDU 数量、`svID`、`smpCnt`、`confRev`、`smpSynch`、采样值序列、质量位，说明 80 点/周波、256 点/周波等工程配置只作为常见实践，不替代项目规范。
+5. **MMS/报告逐层解析**：从 Ethernet/IP/TCP 到 ISO COTP、Session、Presentation、ACSE、MMS PDU，说明 Initiate、Read、Write、GetNameList、InformationReport、Report、控制相关服务的抓包识别路径；重点解释 BER TLV 如何从字节映射到 MMS 字段树。
+6. **Wireshark 分析流程**：提供过滤器、Follow TCP Stream、协议首选项、字段复制、十六进制窗格与字段树联动、重组 TCP 分段、导出 PDU、定位 malformed packet 的步骤。
+7. **开发实现指导**：给出解析器分层设计、偏移推进、长度校验、BER 长度解析、字段白名单/未知字段保留、SCL 反查、错误处理和测试用例组织方式。
+8. **排障矩阵**：补充抓不到包、GOOSE/SV APPID 不匹配、VLAN/优先级错误、`confRev` 不一致、`stNum/sqNum` 异常、SV 丢帧、MMS 报告无数据、TCP 重组失败、时间戳/质量异常等现象到字段的定位路径。
+9. **验证**：新增页面后必须校验所有相对链接、术语 `related` 引用、搜索索引命中、UTF-8 显示和离线打开行为。
+
+可选澄清项：若后续需要做到“真实抓包逐字节复盘”，应由用户提供可公开或已脱敏的 `.pcap/.pcapng` 样例；若没有样例，则先使用原创最小报文字节流和 Wireshark 字段树截图式文字说明构建教程。
+
 ## 当前暂缓内容
 
 - 不单独建设完整的“工程流程教程”（如新建间隔保护配置端到端教学），除非用户后续明确要求。

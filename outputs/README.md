@@ -4,6 +4,7 @@
 
 ## 已发布专题
 
+- `chapters/packet-analysis.html`：面向开发人员的 IEC 61850 报文解析，用原创最小字节流说明 MMS、GOOSE、SV/SMV 的报文组织、字段含义、Wireshark 分析和解析器实现。
 - `chapters/scd-in-ten-minutes.html`：面向新手的 SCD 十分钟导览，以原创小型片段串起 SCL、IED、LD、LN、DataSet、GOOSE 与网络侧 GSE。
 - `chapters/core-concept-comparisons.html`：一次设备/LN、IED/MU/智能终端、DO/DA/FC、GOOSE/SV/Report、ICD/CID/SCD 与值语义的易混概念速查。
 - `chapters/annotated-xml-examples.html`：原创最小 XML 片段库，涵盖 IED/LN、DataSet/FCDA、GOOSE、SV、ReportControl 和 ctlModel。
@@ -28,4 +29,4 @@
 
 ## 新手阅读路径
 
-首次阅读 SCD 时，建议先打开 `chapters/scd-in-ten-minutes.html` 建立对象关系，再打开 `chapters/core-concept-comparisons.html` 排除常见概念混淆；陌生节点先用 `chapters/scd-reading-toolbox.html` 的五问记录上下文，需要对照 XML 时使用 `chapters/annotated-xml-examples.html`，需要识别高频 LN/CDC 时使用 `chapters/ln-cdc-deep-index.html`，出现具体故障症状时使用 `chapters/symptom-troubleshooting.html`，涉及测试、控制或变更时先阅读 `chapters/safety-and-test-boundaries.html`。教学片段是原创且脱敏的结构示例，不是完整可投产配置；SCD 的结构或引用正确也不能替代装置、网络和现场功能验证。
+首次阅读 SCD 时，建议先打开 `chapters/scd-in-ten-minutes.html` 建立对象关系，再打开 `chapters/core-concept-comparisons.html` 排除常见概念混淆；陌生节点先用 `chapters/scd-reading-toolbox.html` 的五问记录上下文，需要对照 XML 时使用 `chapters/annotated-xml-examples.html`，需要识别高频 LN/CDC 时使用 `chapters/ln-cdc-deep-index.html`，出现具体故障症状时使用 `chapters/symptom-troubleshooting.html`，涉及测试、控制或变更时先阅读 `chapters/safety-and-test-boundaries.html`。需要从抓包分析 GOOSE、SV/SMV 或 MMS 时，打开 `chapters/packet-analysis.html`，先按 Ethernet/VLAN/TCP 与 BER TLV 分层确认字节，再回到 SCL 反查工程语义。教学片段是原创且脱敏的结构示例，不是完整可投产配置；SCD 的结构或引用正确也不能替代装置、网络和现场功能验证。
