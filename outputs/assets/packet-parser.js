@@ -64,6 +64,81 @@
     return frames;
   }
 
+  function readPcapng(buffer) {
+    if (buffer.byteLength < 28) throw new Error('PCAPNG 文件小于 Section Header Block 最小长度。');
+    const bytes = new Uint8Array(buffer);
+    const view = new DataView(buffer);
+    const frames = [];
+    const interfaces = [];
+    let offset = 0;
+    let littleEndian;
+    const readBlockLength = start => view.getUint32(start + 4, littleEndian);
+    const paddedLength = length => (length + 3) & ~3;
+
+    while (offset + 12 <= buffer.byteLength) {
+      const typeBytes = hexBytes(bytes.slice(offset, offset + 4)).replaceAll(' ', '').toLowerCase();
+      if (typeBytes === '0a0d0d0a') {
+        if (offset + 12 > buffer.byteLength) throw new Error(`PCAPNG Section Header 在偏移 ${offset} 截断。`);
+        const bom = hexBytes(bytes.slice(offset + 8, offset + 12)).replaceAll(' ', '').toLowerCase();
+        if (bom === '4d3c2b1a') littleEndian = true;
+        else if (bom === '1a2b3c4d') littleEndian = false;
+        else throw new Error(`PCAPNG Section Header 的字节序魔数无效：0x${bom}。`);
+        const length = readBlockLength(offset);
+        if (length < 28 || offset + length > buffer.byteLength || view.getUint32(offset + length - 4, littleEndian) !== length) throw new Error(`PCAPNG Section Header 在偏移 ${offset} 的块长度无效。`);
+        interfaces.length = 0;
+        offset += length;
+        continue;
+      }
+      if (littleEndian === undefined) throw new Error('PCAPNG 缺少 Section Header Block。');
+      const blockType = view.getUint32(offset, littleEndian);
+      const blockLength = readBlockLength(offset);
+      if (blockLength < 12 || offset + blockLength > buffer.byteLength || view.getUint32(offset + blockLength - 4, littleEndian) !== blockLength) {
+        throw new Error(`PCAPNG 块在偏移 ${offset} 的长度无效或截断。`);
+      }
+      if (blockType === 1) {
+        if (blockLength < 20) { addDiagnostic(`PCAPNG Interface Description Block 在偏移 ${offset} 过短。`); }
+        else {
+          const linkType = view.getUint16(offset + 8, littleEndian);
+          let timestampResolution = 0.000001;
+          let optionOffset = offset + 16;
+          const optionEnd = offset + blockLength - 4;
+          while (optionOffset + 4 <= optionEnd) {
+            const code = view.getUint16(optionOffset, littleEndian);
+            const optionLength = view.getUint16(optionOffset + 2, littleEndian);
+            if (code === 0) break;
+            if (optionOffset + 4 + optionLength > optionEnd) { addDiagnostic(`PCAPNG 接口选项在偏移 ${optionOffset} 截断。`); break; }
+            if (code === 9 && optionLength === 1) {
+              const value = bytes[optionOffset + 4];
+              timestampResolution = value & 0x80 ? Math.pow(2, -(value & 0x7f)) : Math.pow(10, -value);
+            }
+            optionOffset += 4 + paddedLength(optionLength);
+          }
+          interfaces.push({ linkType, timestampResolution });
+        }
+      } else if (blockType === 6) {
+        if (blockLength < 32) { addDiagnostic(`PCAPNG Enhanced Packet Block 在偏移 ${offset} 过短。`); }
+        else if (frames.length >= MAX_FRAMES) { addDiagnostic(`为保护浏览器性能，仅加载前 ${MAX_FRAMES} 帧。`); break; }
+        else {
+          const interfaceId = view.getUint32(offset + 8, littleEndian);
+          const timestampHigh = view.getUint32(offset + 12, littleEndian);
+          const timestampLow = view.getUint32(offset + 16, littleEndian);
+          const capturedLength = view.getUint32(offset + 20, littleEndian);
+          const originalLength = view.getUint32(offset + 24, littleEndian);
+          const dataStart = offset + 28;
+          if (dataStart + capturedLength > offset + blockLength - 4) addDiagnostic(`PCAPNG 第 ${frames.length + 1} 帧的捕获长度越过块边界。`, frames.length + 1);
+          else {
+            const iface = interfaces[interfaceId];
+            if (!iface) addDiagnostic(`PCAPNG 第 ${frames.length + 1} 帧引用不存在的接口 ${interfaceId}。`, frames.length + 1);
+            const ticks = timestampHigh * 4294967296 + timestampLow;
+            frames.push({ number: frames.length + 1, timestamp: iface ? ticks * iface.timestampResolution * 1000 : 0, bytes: bytes.slice(dataStart, dataStart + capturedLength), capturedLength, originalLength, linkType: iface?.linkType ?? -1 });
+          }
+        }
+      }
+      offset += blockLength;
+    }
+    return frames;
+  }
+
   function parseEthernet(frame) {
     const bytes = frame.bytes;
     if (frame.linkType !== ETHERNET_LINKTYPE) return { protocol: '未知链路类型', status: '未解析', fields: [] };
@@ -131,8 +206,7 @@
       const buffer = await file.arrayBuffer();
       const bytes = new Uint8Array(buffer);
       const magic = hexBytes(bytes.slice(0, 4)).replaceAll(' ', '').toLowerCase();
-      if (magic === '0a0d0d0a') throw new Error('检测到 PCAPNG。本阶段尚未启用 PCAPNG 读取，将在下一阶段支持。');
-      state.frames = readPcap(buffer);
+      state.frames = magic === '0a0d0d0a' ? readPcapng(buffer) : readPcap(buffer);
       state.frames.forEach(frame => { frame.packet = parseEthernet(frame); });
       status.textContent = `已离线读取 ${file.name}：${state.frames.length} 帧。`;
     } catch (error) {
@@ -148,5 +222,5 @@
 
   captureInput.addEventListener('change', event => { const file = event.target.files?.[0]; if (file) loadCapture(file); });
   frameList.addEventListener('click', event => { const row = event.target.closest('[data-frame]'); if (row) selectFrame(Number(row.dataset.frame)); });
-  window.IEC61850PacketParser = { readPcap, parseEthernet };
+  window.IEC61850PacketParser = { readPcap, readPcapng, parseEthernet };
 }());
