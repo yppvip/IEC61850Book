@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>注释式 XML 示例库｜IEC 61850 离线百科</title><link rel="stylesheet" href="../assets/style.css"></head>
+<body><header class="top"><div class="chapter-nav"><a href="../index.html">← 返回百科首页</a></div><div class="chapter"><h1>注释式 XML 示例库</h1><p>原创、最小、可读的 SCL 片段：读出标准语义，再落到工程配置检查</p></div></header>
+<main class="chapter"><section><h2>使用边界</h2><p>所有名称、地址、数值和结构均为原创教学示例，故意省略无关必需段落，<b>不能直接作为 ICD、SCD 或 CID 导入/下装</b>。每例分别标出标准语义、工程配置项和常见错误；项目中仍须以设备一致性声明、工具支持和项目规范为准。</p></section>
+<section><h2>1. IED / LDevice / LN：功能模型的住址</h2><pre class="map"><code>&lt;IED name="IED_BAY01"&gt;
+  &lt;AccessPoint name="AP1"&gt;&lt;Server&gt;
+    &lt;LDevice inst="LD0"&gt;
+      &lt;LN0 lnClass="LLN0" inst=""/&gt;
+      &lt;LN lnClass="XCBR" inst="1" lnType="XCBR_TYPE_01"/&gt;
+    &lt;/LDevice&gt;
+  &lt;/Server&gt;&lt;/AccessPoint&gt;
+&lt;/IED&gt;</code></pre><table><tr><th>注释</th><th>说明</th></tr><tr><td>标准语义</td><td><code>IED → AccessPoint → Server → LDevice → LN0/LN</code> 是数据模型层级。<code>XCBR</code> 是断路器相关功能 LN 类；<code>inst</code> 用于区分同类实例。</td></tr><tr><td>工程配置项</td><td><code>IED@name</code>、<code>AccessPoint@name</code>、<code>LDevice@inst</code>、<code>LN@prefix/lnClass/inst/lnType</code> 是跨引用和类型追溯的关键标识。</td></tr><tr><td>常见错误</td><td>把 <code>XCBR</code> 直接等同于一次断路器；或只按 <code>lnClass</code> 查找、忽略 prefix 与 inst，导致定位到错误 LN。</td></tr></table></section>
+<section><h2>2. DataSet / FCDA：声明“要选哪些数据”</h2><pre class="map"><code>&lt;LN0 lnClass="LLN0" inst=""&gt;
+  &lt;DataSet name="dsBreaker"&gt;
+    &lt;FCDA ldInst="LD0" lnClass="XCBR" lnInst="1"
+          doName="Pos" daName="stVal" fc="ST"/&gt;
+  &lt;/DataSet&gt;
+&lt;/LN0&gt;</code></pre><table><tr><th>注释</th><th>说明</th></tr><tr><td>标准语义</td><td><code>DataSet</code> 是数据引用清单；此 <code>FCDA</code> 定位到 LD0 内 XCBR1 的 <code>Pos.stVal</code>，功能约束为 <code>ST</code>。</td></tr><tr><td>工程配置项</td><td><code>name</code> 供控制块引用；FCDA 的 LD、LN、DO、DA、FC 必须能解析到发送 IED 的实际模型。</td></tr><tr><td>常见错误</td><td>将 DataSet 当成实时数值容器；漏写或错写 <code>fc</code>；只凭 <code>doName</code> 相同就认为是同一数据。</td></tr></table></section>
+<section><h2>3. GOOSE 发布与订阅：控制块、网络、ExtRef 三段闭环</h2><pre class="map"><code>&lt;!-- 发送 IED 的 LN0 --&gt;
+&lt;GSEControl name="gcbTrip" datSet="dsTrip" appID="TRIP01" confRev="1"/&gt;
+
+&lt;!-- Communication 中的发送网络配置 --&gt;
+&lt;GSE ldInst="LD0" cbName="gcbTrip"&gt;
+  &lt;Address&gt;&lt;P type="MAC-Address"&gt;01-0C-CD-01-00-01&lt;/P&gt;
+    &lt;P type="APPID"&gt;0001&lt;/P&gt;&lt;P type="VLAN-ID"&gt;001&lt;/P&gt;&lt;/Address&gt;
+&lt;/GSE&gt;
+
+&lt;!-- 接收 LN 的输入引用（属性按工程工具生成） --&gt;
+&lt;Inputs&gt;&lt;ExtRef iedName="IED_BAY01" ldInst="LD0" lnClass="PTRC"
+  doName="Tr" daName="general" serviceType="GOOSE"/&gt;&lt;/Inputs&gt;</code></pre><table><tr><th>注释</th><th>说明</th></tr><tr><td>标准语义</td><td><code>GSEControl@datSet</code> 指定发送内容；<code>Communication/GSE</code> 提供网络侧关联；接收 LN 的 <code>ExtRef</code> 表达外部输入绑定。</td></tr><tr><td>工程配置项</td><td>发送 DataSet/FCDA、<code>cbName</code>、LD 实例、MAC、APPID、VLAN 以及接收侧引用须整体一致；具体 ExtRef 属性以工具和 SCL 版次为准。</td></tr><tr><td>常见错误</td><td>只核对 MAC 而未核对控制块和数据集；把 <code>confRev</code> 当作网络时延；或认为 ExtRef 存在就已保证现场订阅生效。</td></tr></table></section>
+<section><h2>4. MU → 保护 SV：采样值发布链</h2><pre class="map"><code>&lt;!-- MU 发送侧 LN0 --&gt;
+&lt;SampledValueControl name="smvMu01" datSet="dsCurrent" smvID="MU01_CURRENT"/&gt;
+
+&lt;!-- Communication 中的网络侧条目 --&gt;
+&lt;SMV ldInst="LD0" cbName="smvMu01"&gt;
+  &lt;Address&gt;&lt;P type="MAC-Address"&gt;01-0C-CD-04-00-01&lt;/P&gt;
+    &lt;P type="APPID"&gt;4001&lt;/P&gt;&lt;P type="VLAN-ID"&gt;002&lt;/P&gt;&lt;/Address&gt;
+&lt;/SMV&gt;
+
+&lt;!-- 保护 LN 的输入引用 --&gt;
+&lt;Inputs&gt;&lt;ExtRef iedName="MU01" ldInst="LD0" lnClass="TCTR"
+  doName="Amp" daName="instMag" serviceType="SMV"/&gt;&lt;/Inputs&gt;</code></pre><table><tr><th>注释</th><th>说明</th></tr><tr><td>标准语义</td><td>SV/SMV 面向连续采样量。发送控制块引用 DataSet，通信侧 <code>SMV</code> 关联网络，接收保护模型以输入引用绑定来源。</td></tr><tr><td>工程配置项</td><td>采样数据集的通道/相序、<code>smvID</code>、LD 与控制块名、MAC/APPID/VLAN、采样率和接收配置必须按项目设计闭环。</td></tr><tr><td>常见错误</td><td>把 SV 当 GOOSE 使用；只比对网络地址而未检查通道顺序、采样参数、互感器量纲或接收 IED 的实际订阅。</td></tr></table></section>
+<section><h2>5. ReportControl：面向客户端的报告</h2><pre class="map"><code>&lt;LN0 lnClass="LLN0" inst=""&gt;
+  &lt;DataSet name="dsMms"&gt;
+    &lt;FCDA ldInst="LD0" lnClass="MMXU" lnInst="1"
+          doName="A" daName="mag" fc="MX"/&gt;
+  &lt;/DataSet&gt;
+  &lt;ReportControl name="rptMeasure" datSet="dsMms" buffered="true"&gt;
+    &lt;TrgOps dchg="true" qchg="true" period="true"/&gt;
+    &lt;OptFields seqNum="true" timeStamp="true" dataSet="true"/&gt;
+  &lt;/ReportControl&gt;
+&lt;/LN0&gt;</code></pre><table><tr><th>注释</th><th>说明</th></tr><tr><td>标准语义</td><td><code>ReportControl</code> 定义报告控制块并引用 DataSet；<code>TrgOps</code> 描述触发类别，<code>OptFields</code> 选择报告附带字段。</td></tr><tr><td>工程配置项</td><td>是否缓冲、触发项、可选字段、允许客户端数量和使能方式均受 IED 能力及客户端工程配置约束。</td></tr><tr><td>常见错误</td><td>把 Report 当作 GOOSE 多播；只因 <code>buffered="true"</code> 就假设历史一定完整；忽略客户端是否已正确使能对应 RCB。</td></tr></table></section>
+<section><h2>6. 控制对象与 ctlModel：模型属性不是操作许可</h2><pre class="map"><code>&lt;DOI name="Pos"&gt;
+  &lt;DAI name="ctlModel"&gt;&lt;Val&gt;sbo-with-enhanced-security&lt;/Val&gt;&lt;/DAI&gt;
+&lt;/DOI&gt;
+
+&lt;!-- 控制相关数据集/服务仍须结合实际 LN、DOType 与 IED 能力理解 --&gt;</code></pre><table><tr><th>注释</th><th>说明</th></tr><tr><td>标准语义</td><td><code>ctlModel</code> 是控制对象相关的数据属性值，示例表达先选择后执行的控制模型语义；具体对象结构须沿类型模板确认。</td></tr><tr><td>工程配置项</td><td>控制对象、<code>Oper</code>/<code>SBO</code> 服务能力、<code>CSWI</code>/<code>CILO</code>、权限、远方/就地、闭锁及测试策略都应按项目配置和试验验证。</td></tr><tr><td>常见错误</td><td>将 <code>DAI/Val</code> 直接当作当前运行状态；或仅看到 ctlModel 就认定遥控可执行，忽略闭锁、权限、模式及现场安全条件。</td></tr></table></section>
+<section><h2>如何把示例用于实际 SCD</h2><ol><li>将示例中的占位名称替换为真实工程中的 IED、LD、LN、DataSet 和控制块名称，但不要复制示例地址或数值。</li><li>按“实例 → 类型模板 → 通信网络 → 接收引用”的顺序追踪，避免只在一个 XML 层级内判断。</li><li>把 SCL 结构校验、引用一致性校验、IED 下装和现场功能验收分别记录；前一项通过不代表后一项已通过。</li></ol><p><a href="scd-in-ten-minutes.html">十分钟读懂 SCD</a> · <a href="core-concept-comparisons.html">易混概念速查</a> · <a href="ied-data-model.html">IED 与数据模型</a> · <a href="communication-process.html">通信与过程层</a></p></section>
+</main><footer class="foot">相关术语请在 <a href="../index.html">百科首页</a> 搜索：IED、LN、DataSet、FCDA、GOOSE、GSEControl、ExtRef、SV、SampledValueControl、ReportControl、ctlModel。</footer></body></html>
