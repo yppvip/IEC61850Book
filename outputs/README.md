@@ -9,6 +9,8 @@
 - `chapters/annotated-xml-examples.html`：原创最小 XML 片段库，涵盖 IED/LN、DataSet/FCDA、GOOSE、SV、ReportControl 和 ctlModel。
 - `chapters/ln-cdc-deep-index.html`：保护、测量/计量、开关控制和自动化高频 LN，以及 CDC 的工程阅读要点。
 - `chapters/symptom-troubleshooting.html`：GOOSE、SV、报告、遥控、SCD 导入和枚举值问题的排障路径库。
+- `chapters/safety-and-test-boundaries.html`：测试模式、质量位、闭锁、权限、网络隔离，以及 SCL 校验和现场验收的边界。
+- `chapters/scd-reading-toolbox.html`：陌生节点五问、引用追踪、值语义判别和可复用的 SCD 阅读记录卡。
 - `chapters/engineering-files.html`：SCL、SCD、ICD、CID、SSD、SED、IID 与文件头。
 - `chapters/primary-and-roles.html`：一次系统层级、LNode 映射和 IED 设备角色。
 - `chapters/ied-data-model.html`：IED/LD/LN、DO/DA、功能约束、控制、设置、质量和时标。
@@ -26,4 +28,4 @@
 
 ## 新手阅读路径
 
-首次阅读 SCD 时，建议先打开 `chapters/scd-in-ten-minutes.html` 建立对象关系，再打开 `chapters/core-concept-comparisons.html` 排除常见概念混淆；需要对照 XML 时使用 `chapters/annotated-xml-examples.html`，需要识别高频 LN/CDC 时使用 `chapters/ln-cdc-deep-index.html`，出现具体故障症状时使用 `chapters/symptom-troubleshooting.html`。教学片段是原创且脱敏的结构示例，不是完整可投产配置；SCD 的结构或引用正确也不能替代装置、网络和现场功能验证。
+首次阅读 SCD 时，建议先打开 `chapters/scd-in-ten-minutes.html` 建立对象关系，再打开 `chapters/core-concept-comparisons.html` 排除常见概念混淆；陌生节点先用 `chapters/scd-reading-toolbox.html` 的五问记录上下文，需要对照 XML 时使用 `chapters/annotated-xml-examples.html`，需要识别高频 LN/CDC 时使用 `chapters/ln-cdc-deep-index.html`，出现具体故障症状时使用 `chapters/symptom-troubleshooting.html`，涉及测试、控制或变更时先阅读 `chapters/safety-and-test-boundaries.html`。教学片段是原创且脱敏的结构示例，不是完整可投产配置；SCD 的结构或引用正确也不能替代装置、网络和现场功能验证。
