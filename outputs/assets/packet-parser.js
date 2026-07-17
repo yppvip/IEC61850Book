@@ -1,0 +1,152 @@
+(function () {
+  'use strict';
+
+  const ETHERNET_LINKTYPE = 1;
+  const MAX_FRAMES = 200000;
+  const state = { frames: [], diagnostics: [], selected: null };
+  const captureInput = document.querySelector('#capture-file');
+  const status = document.querySelector('#parser-status');
+  const summary = document.querySelector('#parser-summary');
+  const frameList = document.querySelector('#frame-list');
+  const frameDetail = document.querySelector('#frame-detail');
+  const diagnosticList = document.querySelector('#diagnostic-list');
+
+  const escapeHtml = value => String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+  const hex = value => `0x${Number(value).toString(16).padStart(4, '0').toUpperCase()}`;
+  const mac = bytes => Array.from(bytes, value => value.toString(16).padStart(2, '0')).join(':');
+  const hexBytes = bytes => Array.from(bytes, value => value.toString(16).padStart(2, '0')).join(' ');
+  const timeText = timestamp => new Date(timestamp).toLocaleString('zh-CN', { hour12: false }) + `.${String(Math.floor((timestamp % 1) * 1000)).padStart(3, '0')}`;
+
+  function addDiagnostic(message, frameNumber) {
+    state.diagnostics.push({ message, frameNumber });
+  }
+
+  function readPcap(buffer) {
+    if (buffer.byteLength < 24) throw new Error('PCAP 文件小于全局头长度（24 字节）。');
+    const bytes = new Uint8Array(buffer);
+    const magic = Array.from(bytes.slice(0, 4)).map(value => value.toString(16).padStart(2, '0')).join('');
+    const formats = {
+      'a1b2c3d4': { littleEndian: false, nanoseconds: false },
+      'd4c3b2a1': { littleEndian: true, nanoseconds: false },
+      'a1b23c4d': { littleEndian: false, nanoseconds: true },
+      '4d3cb2a1': { littleEndian: true, nanoseconds: true }
+    };
+    const format = formats[magic];
+    if (!format) throw new Error(`不是受支持的经典 PCAP 魔数：0x${magic}。`);
+    const view = new DataView(buffer);
+    const linkType = view.getUint32(20, format.littleEndian);
+    if (linkType !== ETHERNET_LINKTYPE) addDiagnostic(`PCAP 链路类型为 ${linkType}，当前阶段仅完整支持 Ethernet（1）。`);
+    const frames = [];
+    let offset = 24;
+    while (offset < buffer.byteLength) {
+      if (frames.length >= MAX_FRAMES) {
+        addDiagnostic(`为保护浏览器性能，仅加载前 ${MAX_FRAMES} 帧。`);
+        break;
+      }
+      if (offset + 16 > buffer.byteLength) {
+        addDiagnostic(`PCAP 记录头在偏移 ${offset} 截断。`);
+        break;
+      }
+      const seconds = view.getUint32(offset, format.littleEndian);
+      const fraction = view.getUint32(offset + 4, format.littleEndian);
+      const capturedLength = view.getUint32(offset + 8, format.littleEndian);
+      const originalLength = view.getUint32(offset + 12, format.littleEndian);
+      const dataStart = offset + 16;
+      const dataEnd = dataStart + capturedLength;
+      if (dataEnd > buffer.byteLength) {
+        addDiagnostic(`第 ${frames.length + 1} 帧声明长度 ${capturedLength}，但文件在偏移 ${buffer.byteLength} 截断。`, frames.length + 1);
+        break;
+      }
+      const milliseconds = seconds * 1000 + fraction / (format.nanoseconds ? 1000000 : 1000);
+      frames.push({ number: frames.length + 1, timestamp: milliseconds, bytes: bytes.slice(dataStart, dataEnd), capturedLength, originalLength, linkType });
+      offset = dataEnd;
+    }
+    return frames;
+  }
+
+  function parseEthernet(frame) {
+    const bytes = frame.bytes;
+    if (frame.linkType !== ETHERNET_LINKTYPE) return { protocol: '未知链路类型', status: '未解析', fields: [] };
+    if (bytes.length < 14) return { protocol: '截断 Ethernet', status: '错误', fields: [{ name: '错误', value: '不足 14 字节', offset: 0, length: bytes.length }] };
+    let offset = 12;
+    let etherType = (bytes[offset] << 8) | bytes[offset + 1];
+    offset += 2;
+    const vlans = [];
+    while ([0x8100, 0x88a8, 0x9100].includes(etherType)) {
+      if (offset + 4 > bytes.length) return { protocol: '截断 VLAN', status: '错误', fields: [{ name: '错误', value: 'VLAN Tag 截断', offset, length: bytes.length - offset }] };
+      const tci = (bytes[offset] << 8) | bytes[offset + 1];
+      vlans.push({ pcp: (tci >> 13) & 7, dei: (tci >> 12) & 1, id: tci & 0x0fff });
+      etherType = (bytes[offset + 2] << 8) | bytes[offset + 3];
+      offset += 4;
+    }
+    const protocol = etherType === 0x88b8 ? 'GOOSE（候选）' : etherType === 0x88ba ? 'SV/SMV（候选）' : etherType === 0x0800 ? 'IPv4' : etherType === 0x86dd ? 'IPv6' : `EtherType ${hex(etherType)}`;
+    const fields = [
+      { name: 'Destination MAC', value: mac(bytes.slice(0, 6)), offset: 0, length: 6 },
+      { name: 'Source MAC', value: mac(bytes.slice(6, 12)), offset: 6, length: 6 },
+      ...vlans.map((vlan, index) => ({ name: `VLAN ${index + 1}`, value: `ID=${vlan.id}, PCP=${vlan.pcp}, DEI=${vlan.dei}`, offset: 14 + index * 4, length: 4 })),
+      { name: 'EtherType', value: hex(etherType), offset: offset - 2, length: 2 }
+    ];
+    return { protocol, status: etherType === 0x88b8 || etherType === 0x88ba ? 'IEC 61850 候选' : '已识别链路层', source: mac(bytes.slice(6, 12)), destination: mac(bytes.slice(0, 6)), vlans, etherType, payloadOffset: offset, fields };
+  }
+
+  function renderSummary() {
+    const counts = state.frames.reduce((result, frame) => { result[frame.packet.protocol] = (result[frame.packet.protocol] || 0) + 1; return result; }, {});
+    const first = state.frames[0];
+    const last = state.frames.at(-1);
+    const metrics = [`总帧数：${state.frames.length}`, `GOOSE 候选：${counts['GOOSE（候选）'] || 0}`, `SV 候选：${counts['SV/SMV（候选）'] || 0}`, `诊断：${state.diagnostics.length}`];
+    if (first && last) metrics.splice(1, 0, `时间范围：${timeText(first.timestamp)} 至 ${timeText(last.timestamp)}`);
+    summary.innerHTML = metrics.map(metric => `<span>${escapeHtml(metric)}</span>`).join('');
+  }
+
+  function renderFrames() {
+    if (!state.frames.length) { frameList.innerHTML = '<tr><td colspan="7">未从文件中读取到帧。</td></tr>'; return; }
+    frameList.innerHTML = state.frames.map(frame => {
+      const packet = frame.packet;
+      const vlan = packet.vlans?.map(item => item.id).join(', ') || '—';
+      return `<tr data-frame="${frame.number}"><td>${frame.number}</td><td>${escapeHtml(timeText(frame.timestamp))}</td><td>${escapeHtml(packet.protocol)}</td><td>${escapeHtml(packet.source ? `${packet.source} → ${packet.destination}` : '—')}</td><td>${escapeHtml(vlan)}</td><td>—</td><td>${escapeHtml(packet.status)}</td></tr>`;
+    }).join('');
+  }
+
+  function selectFrame(number) {
+    const frame = state.frames.find(item => item.number === number);
+    if (!frame) return;
+    state.selected = number;
+    document.querySelectorAll('[data-frame]').forEach(row => row.classList.toggle('selected', Number(row.dataset.frame) === number));
+    const packet = frame.packet;
+    const fields = packet.fields.map(field => `<tr><td>${escapeHtml(field.name)}</td><td>${escapeHtml(field.value)}</td><td>${field.offset}</td><td>${field.length}</td></tr>`).join('');
+    frameDetail.className = '';
+    frameDetail.innerHTML = `<p><b>第 ${frame.number} 帧</b> · ${escapeHtml(timeText(frame.timestamp))} · 捕获 ${frame.capturedLength} 字节（原始 ${frame.originalLength} 字节）</p><div class="table-wrap"><table><thead><tr><th>字段</th><th>值</th><th>偏移</th><th>长度</th></tr></thead><tbody>${fields}</tbody></table></div><h3>原始字节</h3><pre class="map">${escapeHtml(hexBytes(frame.bytes))}</pre>`;
+  }
+
+  function renderDiagnostics() {
+    diagnosticList.innerHTML = state.diagnostics.length ? state.diagnostics.map(item => `<li>${item.frameNumber ? `第 ${item.frameNumber} 帧：` : ''}${escapeHtml(item.message)}</li>`).join('') : '<li>未发现 PCAP 结构诊断。</li>';
+  }
+
+  async function loadCapture(file) {
+    state.frames = [];
+    state.diagnostics = [];
+    state.selected = null;
+    status.textContent = `正在读取 ${file.name}…`;
+    try {
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      const magic = hexBytes(bytes.slice(0, 4)).replaceAll(' ', '').toLowerCase();
+      if (magic === '0a0d0d0a') throw new Error('检测到 PCAPNG。本阶段尚未启用 PCAPNG 读取，将在下一阶段支持。');
+      state.frames = readPcap(buffer);
+      state.frames.forEach(frame => { frame.packet = parseEthernet(frame); });
+      status.textContent = `已离线读取 ${file.name}：${state.frames.length} 帧。`;
+    } catch (error) {
+      addDiagnostic(error.message);
+      status.textContent = `无法解析 ${file.name}：${error.message}`;
+    }
+    renderSummary();
+    renderFrames();
+    renderDiagnostics();
+    frameDetail.className = 'empty';
+    frameDetail.textContent = '选择一帧后显示协议字段、字节偏移和原始数据。';
+  }
+
+  captureInput.addEventListener('change', event => { const file = event.target.files?.[0]; if (file) loadCapture(file); });
+  frameList.addEventListener('click', event => { const row = event.target.closest('[data-frame]'); if (row) selectFrame(Number(row.dataset.frame)); });
+  window.IEC61850PacketParser = { readPcap, parseEthernet };
+}());
