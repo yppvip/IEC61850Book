@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IEC 61850 / SCL 离线百科</title><link rel="stylesheet" href="assets/style.css"></head>
+<body><header class="top"><h1>IEC 61850 / SCL 离线百科</h1><p>关键术语 · 组织关系 · 工程配置 · Edition 2 / 2.1 通用实践</p></header>
+<main class="shell"><section class="search-panel"><form id="search-form"><label for="term-search"><b>全局术语检索</b></label><div class="search-row"><input id="term-search" type="search" placeholder="例如：MU、合并单元、SMV、FCDA、XCBR、数据集" autocomplete="off"><button type="submit">查询</button></div></form><output id="result-status" for="term-search"></output><span class="hint">离线索引：可搜索中文名、XML 标签、英文全称、缩写、类别和别名。</span></section>
+<div class="grid"><section class="card"><h2>按主题进入</h2><div id="categories" class="category-list"></div><p class="legend">当前为第 1 阶段骨架。后续章节会在此分类下持续增加，并以本地相对链接打开。</p></section><section class="card"><h2>标准对象关系</h2><pre class="map">SCL → SCD / ICD / CID / SSD / SED / IID
+一次系统：Substation → VoltageLevel → Bay → LNode
+IED 模型：IED → AccessPoint → Server → LDevice → LN0 / LN
+数据清单：DataSet → FCDA
+通信配置：Communication → SubNetwork → ConnectedAP → GSE / SMV
+类型库：DataTypeTemplates → LNodeType / DOType / DAType / EnumType
+
+GOOSE：GSEControl → DataSet → GSE → ExtRef
+SV/SMV：SampledValueControl → DataSet → SMV → ExtRef</pre></section></div>
+<section class="card" style="margin-top:22px"><h2>已发布专题</h2><p><a href="chapters/engineering-files.html"><b>SCL 与工程交换文件</b></a><br><span class="meta">SCD、ICD、CID、SSD、SED、IID、Header、命名空间与 Private。</span></p></section>
+<section class="results"><h2>术语索引</h2><div id="results"></div></section></main>
+<footer class="foot">标准语义与工程/厂商扩展应分开理解。此百科提供原创解释、关系和示例，不替代项目规范、设备手册或 IEC 标准原文。<br>兼容入口：<a href="scl-scd-help.html">原 SCL / SCD 帮助页</a></footer>
+<script src="data/terms.js"></script><script src="assets/app.js"></script></body></html>
