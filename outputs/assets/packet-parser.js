@@ -11,6 +11,8 @@
   const frameList = document.querySelector('#frame-list');
   const frameDetail = document.querySelector('#frame-detail');
   const signalList = document.querySelector('#signal-list');
+  const protocolFilter = document.querySelector('#protocol-filter');
+  const signalFilter = document.querySelector('#signal-filter');
   const diagnosticList = document.querySelector('#diagnostic-list');
 
   const escapeHtml = value => String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
@@ -436,8 +438,9 @@
   }
 
   function renderFrames() {
-    if (!state.frames.length) { frameList.innerHTML = '<tr><td colspan="7">未从文件中读取到帧。</td></tr>'; return; }
-    frameList.innerHTML = state.frames.map(frame => {
+    const visible = state.frames.filter(frame => !protocolFilter.value || frame.packet.protocol === protocolFilter.value);
+    if (!visible.length) { frameList.innerHTML = '<tr><td colspan="7">没有符合当前协议筛选的帧。</td></tr>'; return; }
+    frameList.innerHTML = visible.map(frame => {
       const packet = frame.packet;
       const vlan = packet.vlans?.map(item => item.id).join(', ') || '—';
       return `<tr data-frame="${frame.number}"><td>${frame.number}</td><td>${escapeHtml(timeText(frame.timestamp))}</td><td>${escapeHtml(packet.protocol)}</td><td>${escapeHtml(packet.source ? `${packet.source} → ${packet.destination}` : '—')}</td><td>${escapeHtml(vlan)}</td><td>${packet.appid === undefined ? '—' : escapeHtml(hex(packet.appid))}</td><td>${escapeHtml(packet.status)}</td></tr>`;
@@ -462,7 +465,8 @@
   }
 
   function renderSignals() {
-    const rows = state.frames.flatMap(frame => frame.packet.signals.map(signal => ({ ...signal, frame })));
+    const query = signalFilter.value.trim().toLocaleLowerCase();
+    const rows = state.frames.flatMap(frame => frame.packet.signals.map(signal => ({ ...signal, frame }))).filter(row => !query || `${row.name} ${row.value} ${row.mapping}`.toLocaleLowerCase().includes(query));
     signalList.innerHTML = rows.length ? rows.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(timeText(row.frame.timestamp))}</td><td>${escapeHtml(row.value)}</td><td>${escapeHtml(row.quality)}</td><td>${row.frame.number}</td><td>${escapeHtml(row.mapping)}</td></tr>`).join('') : '<tr><td colspan="6">尚未解析出 GOOSE / SV 数据项。</td></tr>';
   }
 
@@ -492,6 +496,8 @@
   }
 
   captureInput.addEventListener('change', event => { const file = event.target.files?.[0]; if (file) loadCapture(file); });
+  protocolFilter.addEventListener('change', renderFrames);
+  signalFilter.addEventListener('input', renderSignals);
   sclInput.addEventListener('change', async event => {
     const file = event.target.files?.[0];
     if (!file) return;
