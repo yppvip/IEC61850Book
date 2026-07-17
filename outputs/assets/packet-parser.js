@@ -3,8 +3,9 @@
 
   const ETHERNET_LINKTYPE = 1;
   const MAX_FRAMES = 200000;
-  const state = { frames: [], diagnostics: [], selected: null };
+  const state = { frames: [], diagnostics: [], selected: null, scl: null };
   const captureInput = document.querySelector('#capture-file');
+  const sclInput = document.querySelector('#scl-file');
   const status = document.querySelector('#parser-status');
   const summary = document.querySelector('#parser-summary');
   const frameList = document.querySelector('#frame-list');
@@ -176,6 +177,85 @@
 
   function text(bytes) { return new TextDecoder('ascii', { fatal: false }).decode(bytes); }
 
+  function childrenBy(element, name) { return Array.from(element.children || []).filter(child => child.localName === name); }
+  function descendantsBy(element, name) { return Array.from(element.getElementsByTagName('*')).filter(child => child.localName === name); }
+  function appidFromText(value) { return value && /^(?:0x)?[0-9a-f]+$/i.test(value.trim()) ? Number.parseInt(value.trim().replace(/^0x/i, ''), 16) : undefined; }
+  function fcdaLabel(fcda, defaultLd) {
+    const ld = fcda.getAttribute('ldInst') || defaultLd || '?';
+    const prefix = fcda.getAttribute('prefix') || '';
+    const lnClass = fcda.getAttribute('lnClass') || 'LN0';
+    const lnInst = fcda.getAttribute('lnInst') || '';
+    const doName = fcda.getAttribute('doName') || '?';
+    const daName = fcda.getAttribute('daName');
+    const fc = fcda.getAttribute('fc') || '?';
+    return `${ld}/${prefix}${lnClass}${lnInst}.${doName}${daName ? `.${daName}` : ''} [${fc}]`;
+  }
+
+  function networkAppid(doc, iedName, ldInst, cbName, service) {
+    const candidates = descendantsBy(doc, 'ConnectedAP').filter(item => item.getAttribute('iedName') === iedName);
+    for (const connection of candidates) {
+      const block = descendantsBy(connection, service).find(item => item.getAttribute('ldInst') === ldInst && item.getAttribute('cbName') === cbName);
+      if (!block) continue;
+      const parameter = descendantsBy(block, 'P').find(item => item.getAttribute('type') === 'APPID');
+      const appid = parameter && appidFromText(parameter.textContent);
+      if (appid !== undefined) return appid;
+    }
+    return undefined;
+  }
+
+  function parseScl(textValue) {
+    const documentXml = new DOMParser().parseFromString(textValue, 'application/xml');
+    if (descendantsBy(documentXml, 'parsererror').length) throw new Error('SCD/ICD XML 格式无效，浏览器无法解析。');
+    const goose = [];
+    const sv = [];
+    for (const ied of descendantsBy(documentXml, 'IED')) {
+      const iedName = ied.getAttribute('name');
+      if (!iedName) continue;
+      for (const ldevice of descendantsBy(ied, 'LDevice')) {
+        const ldInst = ldevice.getAttribute('inst') || '';
+        const ln0 = childrenBy(ldevice, 'LN0')[0];
+        if (!ln0) continue;
+        const dataSets = new Map(childrenBy(ln0, 'DataSet').map(dataSet => [dataSet.getAttribute('name'), childrenBy(dataSet, 'FCDA').map(fcda => fcdaLabel(fcda, ldInst))]));
+        for (const control of childrenBy(ln0, 'GSEControl')) {
+          const cbName = control.getAttribute('name') || '';
+          const dataSet = control.getAttribute('datSet') || '';
+          goose.push({ iedName, ldInst, cbName, dataSet, entries: dataSets.get(dataSet) || [], appid: networkAppid(documentXml, iedName, ldInst, cbName, 'GSE') });
+        }
+        for (const control of childrenBy(ln0, 'SampledValueControl')) {
+          const cbName = control.getAttribute('name') || '';
+          const dataSet = control.getAttribute('datSet') || '';
+          sv.push({ iedName, ldInst, cbName, svID: control.getAttribute('smvID') || '', dataSet, entries: dataSets.get(dataSet) || [], appid: networkAppid(documentXml, iedName, ldInst, cbName, 'SMV') });
+        }
+      }
+    }
+    return { goose, sv };
+  }
+
+  function resolveSignals() {
+    for (const frame of state.frames) {
+      const packet = frame.packet;
+      for (const signal of packet.signals) {
+        signal.name = signal.defaultName || signal.name;
+        signal.mapping = '未导入 SCL';
+        if (!state.scl) continue;
+        if (signal.kind === 'goose') {
+          const candidates = state.scl.goose.filter(item => (item.appid === undefined || item.appid === packet.appid) && (!packet.metadata?.gocbRef || packet.metadata.gocbRef.endsWith(`$GO$${item.cbName}`)));
+          if (candidates.length === 1 && candidates[0].entries[signal.index]) {
+            signal.name = candidates[0].entries[signal.index];
+            signal.mapping = `已匹配 ${candidates[0].iedName}/${candidates[0].ldInst}/${candidates[0].cbName}`;
+          } else signal.mapping = candidates.length > 1 ? `SCL 候选 ${candidates.length} 个，未自动选择` : 'SCL 中未找到匹配 GOOSE 控制块';
+        }
+        if (signal.kind === 'sv') {
+          const candidates = state.scl.sv.filter(item => (item.appid === undefined || item.appid === packet.appid) && (!signal.svID || !item.svID || item.svID === signal.svID));
+          if (candidates.length === 1) {
+            signal.name = `SV sample（${candidates[0].dataSet || candidates[0].cbName}）`;
+            signal.mapping = `已匹配 ${candidates[0].iedName}/${candidates[0].ldInst}；样本字节布局待类型确认`;
+          } else signal.mapping = candidates.length > 1 ? `SCL 候选 ${candidates.length} 个，未自动选择` : 'SCL 中未找到匹配 SV 控制块';
+        }
+      }
+    }
+  }
+
   function decodeDataValue(bytes, tlv) {
     const value = bytes.slice(tlv.valueStart, tlv.valueEnd);
     if (tlv.tag === 0x83) return { value: value.some(byte => byte !== 0) ? 'true' : 'false', quality: '—' };
@@ -206,12 +286,13 @@
       { name: 'GOOSE PDU', value: 'Tag 0x61', offset: header.apduStart, length: root.nextOffset - header.apduStart }
     ];
     const signals = [];
+    const metadata = {};
     let cursor = root.valueStart;
     while (cursor < root.valueEnd) {
       const tlv = readTlv(bytes, cursor, root.valueEnd);
       const value = bytes.slice(tlv.valueStart, tlv.valueEnd);
       const name = names[tlv.tag] || `未知 GOOSE Tag ${hex(tlv.tag)}`;
-      if (tlv.tag === 0x80 || tlv.tag === 0x82 || tlv.tag === 0x83) fields.push({ name, value: text(value), offset: cursor, length: tlv.nextOffset - cursor });
+      if (tlv.tag === 0x80 || tlv.tag === 0x82 || tlv.tag === 0x83) { metadata[name] = text(value); fields.push({ name, value: metadata[name], offset: cursor, length: tlv.nextOffset - cursor }); }
       else if ([0x81, 0x85, 0x86, 0x88, 0x8a].includes(tlv.tag)) fields.push({ name, value: unsigned(value), offset: cursor, length: tlv.nextOffset - cursor });
       else if ([0x87, 0x89].includes(tlv.tag)) fields.push({ name, value: value.some(byte => byte !== 0) ? 'true' : 'false', offset: cursor, length: tlv.nextOffset - cursor });
       else if (tlv.tag === 0x84) fields.push({ name, value: `UTC 时间原始值：${hexBytes(value)}`, offset: cursor, length: tlv.nextOffset - cursor });
@@ -224,13 +305,13 @@
           const decoded = decodeDataValue(bytes, dataTlv);
           item++;
           fields.push({ name: `allData 第 ${item} 项`, value: decoded.value, offset: itemCursor, length: dataTlv.nextOffset - itemCursor });
-          signals.push({ name: `GOOSE 第 ${item} 项`, value: decoded.value, quality: decoded.quality, mapping: '未导入 SCL', offset: itemCursor });
+          signals.push({ name: `GOOSE 第 ${item} 项`, defaultName: `GOOSE 第 ${item} 项`, kind: 'goose', index: item - 1, value: decoded.value, quality: decoded.quality, mapping: '未导入 SCL', offset: itemCursor });
           itemCursor = dataTlv.nextOffset;
         }
       } else fields.push({ name, value: hexBytes(value), offset: cursor, length: tlv.nextOffset - cursor });
       cursor = tlv.nextOffset;
     }
-    return { fields, appid: header.appid, signals };
+    return { fields, appid: header.appid, signals, metadata };
   }
 
   function parseSv(bytes, offset) {
@@ -256,16 +337,17 @@
           asduNumber++;
           fields.push({ name: `ASDU ${asduNumber}`, value: `${asdu.length} 字节`, offset: asduCursor, length: asdu.nextOffset - asduCursor });
           let fieldCursor = asdu.valueStart;
+          let svID = '';
           while (fieldCursor < asdu.valueEnd) {
             const field = readTlv(bytes, fieldCursor, asdu.valueEnd);
             const value = bytes.slice(field.valueStart, field.valueEnd);
             const labels = { 0x80: 'svID', 0x81: 'datSet', 0x82: 'smpCnt', 0x83: 'confRev', 0x84: 'refrTm', 0x85: 'smpSynch', 0x86: 'smpRate', 0x87: 'sample', 0x88: 'smpMod' };
             const name = `ASDU ${asduNumber} ${labels[field.tag] || `未知 Tag ${hex(field.tag)}`}`;
             let display = hexBytes(value);
-            if ([0x80, 0x81].includes(field.tag)) display = text(value);
+            if ([0x80, 0x81].includes(field.tag)) { display = text(value); if (field.tag === 0x80) svID = display; }
             else if ([0x82, 0x83, 0x85, 0x86, 0x88].includes(field.tag)) display = unsigned(value);
             fields.push({ name, value: display, offset: fieldCursor, length: field.nextOffset - fieldCursor });
-            if (field.tag === 0x87) signals.push({ name: `SV ASDU ${asduNumber} sample`, value: hexBytes(value), quality: '原始 sample；待 SCL 映射', mapping: '未导入 SCL', offset: fieldCursor });
+            if (field.tag === 0x87) signals.push({ name: `SV ASDU ${asduNumber} sample`, defaultName: `SV ASDU ${asduNumber} sample`, kind: 'sv', svID, value: hexBytes(value), quality: '原始 sample；待 SCL 映射', mapping: '未导入 SCL', offset: fieldCursor });
             fieldCursor = field.nextOffset;
           }
           asduCursor = asdu.nextOffset;
@@ -366,6 +448,7 @@
     }
     renderSummary();
     renderFrames();
+    resolveSignals();
     renderSignals();
     renderDiagnostics();
     frameDetail.className = 'empty';
@@ -373,6 +456,21 @@
   }
 
   captureInput.addEventListener('change', event => { const file = event.target.files?.[0]; if (file) loadCapture(file); });
+  sclInput.addEventListener('change', async event => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      state.scl = parseScl(await file.text());
+      status.textContent = `已导入 ${file.name}：${state.scl.goose.length} 个 GOOSE 控制块，${state.scl.sv.length} 个 SV 控制块。`;
+      resolveSignals();
+      renderSignals();
+    } catch (error) {
+      state.scl = null;
+      status.textContent = `无法解析 ${file.name}：${error.message}`;
+      addDiagnostic(`SCD/ICD：${error.message}`);
+      renderDiagnostics();
+    }
+  });
   frameList.addEventListener('click', event => { const row = event.target.closest('[data-frame]'); if (row) selectFrame(Number(row.dataset.frame)); });
-  window.IEC61850PacketParser = { readPcap, readPcapng, parseEthernet };
+  window.IEC61850PacketParser = { readPcap, readPcapng, parseEthernet, parseScl };
 }());
