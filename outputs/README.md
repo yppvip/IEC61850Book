@@ -4,6 +4,7 @@
 
 ## 已发布专题
 
+- `chapters/scd-in-ten-minutes.html`：面向新手的 SCD 十分钟导览，以原创小型片段串起 SCL、IED、LD、LN、DataSet、GOOSE 与网络侧 GSE。
 - `chapters/engineering-files.html`：SCL、SCD、ICD、CID、SSD、SED、IID 与文件头。
 - `chapters/primary-and-roles.html`：一次系统层级、LNode 映射和 IED 设备角色。
 - `chapters/ied-data-model.html`：IED/LD/LN、DO/DA、功能约束、控制、设置、质量和时标。
@@ -18,3 +19,7 @@
 - 术语数据格式见 `data/README.md`。扩充词条后应检查 `related` 中的每一个标识均存在。
 
 `scl-scd-help.html` 保留为早期单页帮助文档兼容入口；百科主入口为 `index.html`。
+
+## 新手阅读路径
+
+首次阅读 SCD 时，建议先打开 `chapters/scd-in-ten-minutes.html` 建立对象关系，再按页面链接进入工程文件、IED 数据模型与通信专题。教学片段是原创且脱敏的结构示例，不是完整可投产配置；SCD 的结构或引用正确也不能替代装置、网络和现场功能验证。

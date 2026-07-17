@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>十分钟读懂 SCD｜IEC 61850 离线百科</title><link rel="stylesheet" href="../assets/style.css"></head>
+<body><header class="top"><div class="chapter-nav"><a href="../index.html">← 返回百科首页</a></div><div class="chapter"><h1>十分钟读懂 SCD</h1><p>从一个教学用的小片段，看清 SCL、设备模型、数据集与 GOOSE 的关系</p></div></header>
+<main class="chapter">
+<section><h2>先用一句话建立全貌</h2><p><code>SCD</code> 是全站配置的一个 SCL 文件类型。阅读它时，可先把它看成两件事：<b>IED 内定义设备有什么逻辑功能和要发送什么数据</b>；<b>Communication 描述这些设备怎样接入网络</b>。下面只沿一条 GOOSE 发布线阅读，不试图展示完整工程。</p><pre class="map">SCL（文件根）
+└─ IED（一个装置）
+   └─ LDevice（装置内的逻辑设备）
+      ├─ LN0（LD 的公共节点）
+      │  ├─ DataSet（要发送的数据清单）
+      │  └─ GSEControl（引用该清单的 GOOSE 发布控制块）
+      └─ LN（一个功能节点，例如断路器 XCBR）
+         └─ Pos（位置等功能数据）
+
+另一路：Communication → ConnectedAP → GSE，给该 GOOSE 控制块配置网络侧发布信息。</pre><div class="notice"><b>记忆重点：</b><code>DataSet</code> 不是实时数据本身，而是“挑选哪些数据”的清单；<code>GSEControl</code> 让这个清单成为 GOOSE 发布；网络地址还要到 <code>Communication</code> 中查。</div></section>
+<section><h2>原创最小片段：先只看结构</h2><p>以下名称、地址与数据均为脱敏教学示例，不来自任何项目，也不构成可直接导入或下装的完整 SCD。</p><pre class="map"><code>&lt;SCL xmlns="http://www.iec.ch/61850/2003/SCL"&gt;
+  &lt;IED name="IED_BAY01"&gt;
+    &lt;AccessPoint name="AP1"&gt;
+      &lt;Server&gt;&lt;LDevice inst="LD0"&gt;
+        &lt;LN0 lnClass="LLN0" inst=""&gt;
+          &lt;DataSet name="dsBreaker"&gt;
+            &lt;FCDA ldInst="LD0" lnClass="XCBR" lnInst="1" doName="Pos" daName="stVal" fc="ST"/&gt;
+          &lt;/DataSet&gt;
+          &lt;GSEControl name="gcbBreaker" datSet="dsBreaker" appID="BAY01_POS" confRev="1"/&gt;
+        &lt;/LN0&gt;
+        &lt;LN lnClass="XCBR" inst="1" lnType="XCBR_TYPE_01"/&gt;
+      &lt;/LDevice&gt;&lt;/Server&gt;
+    &lt;/AccessPoint&gt;
+  &lt;/IED&gt;
+&lt;/SCL&gt;</code></pre><p class="meta">为把注意力放在主线，此片段省略了 <code>Header</code>、类型模板、通信段、接收侧 <code>ExtRef</code> 等完整 SCD 所需或常见内容。示例中的 <code>lnType</code> 也仅表示该 LN 还应能追溯到类型模板。</p></section>
+<section><h2>按箭头读六个对象</h2><table><tr><th>看到什么</th><th>在示例中的作用</th><th>下一步看哪里</th></tr><tr><td><code>SCL</code></td><td>整个 XML 工程交换文件的根。SCD、ICD、CID 等都使用 SCL 语法。</td><td>先从 <code>Header</code> 和工程交付用途确认文件类型；本例为聚焦结构而省略 Header。</td></tr><tr><td><code>IED name="IED_BAY01"</code></td><td>一台装置的工程模型；<code>name</code> 是跨引用识别该设备的重要名称。</td><td>进入其 <code>AccessPoint/Server</code>，并在 Communication 中寻找同名 IED 的接入配置。</td></tr><tr><td><code>LDevice inst="LD0"</code></td><td>装置内部的逻辑设备容器。<code>LD0</code> 将出现在数据引用中。</td><td>先识别该 LD 的 <code>LN0</code> 与其下的功能 <code>LN</code>。</td></tr><tr><td><code>LN lnClass="XCBR" inst="1"</code></td><td>一个断路器相关功能节点。它是数据源的功能归属，不等于物理断路器本体。</td><td>沿 <code>lnType</code> 进入类型模板，确认 <code>Pos</code> 等数据对象的实际结构。</td></tr><tr><td><code>DataSet / FCDA</code></td><td><code>dsBreaker</code> 选择 <code>LD0/XCBR1.Pos.stVal</code> 的 <code>ST</code> 数据属性；它只是引用清单。</td><td>核对每个 FCDA 的 LD、LN、DO、DA、FC 是否真的存在且语义匹配。</td></tr><tr><td><code>GSEControl</code> → GOOSE</td><td><code>datSet="dsBreaker"</code> 将该数据集指定给 GOOSE 发布控制块；这才建立“发什么”的关系。</td><td>按 <code>name</code>、LD 实例等线索到 Communication 找对应 <code>GSE</code> 和网络 Address。</td></tr></table></section>
+<section><h2>把“数据清单”连到“网络发布”</h2><p>示例中的 <code>GSEControl</code> 仍没有写 MAC、APPID、VLAN 等网络侧参数。这些通常出现在另一个 SCL 区域。下列片段仅展示关联方向：</p><pre class="map"><code>&lt;Communication&gt;
+  &lt;SubNetwork name="StationLAN" type="8-MMS"&gt;
+    &lt;ConnectedAP iedName="IED_BAY01" apName="AP1"&gt;
+      &lt;GSE ldInst="LD0" cbName="gcbBreaker"&gt;
+        &lt;Address&gt;&lt;P type="MAC-Address"&gt;01-0C-CD-01-00-01&lt;/P&gt;
+          &lt;P type="APPID"&gt;0001&lt;/P&gt;&lt;P type="VLAN-ID"&gt;001&lt;/P&gt;&lt;/Address&gt;
+      &lt;/GSE&gt;
+    &lt;/ConnectedAP&gt;
+  &lt;/SubNetwork&gt;
+&lt;/Communication&gt;</code></pre><p>对应关系是：<code>ConnectedAP@iedName/apName</code> 回到 IED 与 AccessPoint；<code>GSE@ldInst/cbName</code> 回到 <code>LD0</code> 内的 <code>GSEControl name="gcbBreaker"</code>。这些教学数值没有通用默认含义，项目工程必须按网络设计配置。</p></section>
+<section><h2>十分钟阅读顺序</h2><ol><li><b>第 1 分钟：</b>确认它是否为 SCD，以及来源工具、工程版本和交付用途。</li><li><b>第 2–4 分钟：</b>从一个 <code>IED</code> 进入 <code>LDevice</code>，区分公共 <code>LN0</code> 与功能 <code>LN</code>。</li><li><b>第 5–6 分钟：</b>从 <code>GSEControl@datSet</code> 找到 DataSet，再逐条读 FCDA 的 LD/LN/DO/DA/FC。</li><li><b>第 7–8 分钟：</b>到 <code>Communication</code> 核对 ConnectedAP、GSE、MAC、APPID 与 VLAN。</li><li><b>第 9–10 分钟：</b>若要判断接收关系，从接收 IED 的 <code>Inputs/ExtRef</code> 反向闭环；再检查类型模板和项目网络设计。</li></ol><div class="caution"><b>不要从片段推导现场已成功联跳。</b>SCD 的引用正确只说明工程配置有待验证；装置能力、版本兼容、交换网络、闭锁/测试状态、订阅生效和现场试验仍须独立核对。</div></section>
+<section><h2>继续深入</h2><p><a href="engineering-files.html">SCL 与工程交换文件</a>：分清 SCD 与 ICD/CID 等文件。<br><a href="ied-data-model.html">IED 与数据模型</a>：继续追踪 LD、LN、DO、DA、FC 和类型模板。<br><a href="communication-process.html">通信与过程层</a>：完整理解 GOOSE、GSE、ExtRef 与网络参数。<br><a href="engineering-practice.html">工程实践与排障</a>：按引用链做工程闭环检查。</p></section>
+</main><footer class="foot">相关术语请在 <a href="../index.html">百科首页</a> 搜索：SCD、SCL、IED、LDevice、LN、LN0、DataSet、FCDA、GSEControl、GOOSE、GSE、ExtRef。</footer></body></html>

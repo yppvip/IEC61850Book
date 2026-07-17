@@ -1,7 +1,8 @@
 /* 离线百科索引。后续阶段按同一字段格式持续追加词条。 */
 window.IEC61850_TERMS = [
- {id:'scl',zh:'SCL',en:'Substation Configuration Language',aliases:['变电站配置语言','SCL 文件'],category:'工程交换文件',level:'工程文件根',summary:'IEC 61850 工程配置交换使用的 XML 语言；SCD、ICD、CID、SSD、SED、IID 等文件都采用 SCL 语法。',related:['scd','ied','substation','communication','datatypetemplates']},
- {id:'scd',zh:'SCD',en:'Substation Configuration Description',aliases:['全站配置文件','变电站配置描述'],category:'工程交换文件',level:'SCL 文件类型',summary:'全站系统配置文件，同时汇集一次系统、IED 配置、通信网络和数据类型模板。',related:['scl','substation','communication','ied']},
+ {id:'scl',zh:'SCL',en:'Substation Configuration Language',aliases:['变电站配置语言','SCL 文件'],category:'工程交换文件',level:'工程文件根',summary:'IEC 61850 工程配置交换使用的 XML 语言；SCD、ICD、CID、SSD、SED、IID 等文件都采用 SCL 语法。',related:['scd','scd-reading-guide','ied','substation','communication','datatypetemplates']},
+ {id:'scd',zh:'SCD',en:'Substation Configuration Description',aliases:['全站配置文件','变电站配置描述'],category:'工程交换文件',level:'SCL 文件类型',summary:'全站系统配置文件，同时汇集一次系统、IED 配置、通信网络和数据类型模板。',related:['scl','scd-reading-guide','substation','communication','ied']},
+ {id:'scd-reading-guide',zh:'SCD 十分钟导览',en:'SCD Reading Guide',aliases:['十分钟读懂 SCD','SCD 新手阅读','SCL 阅读顺序'],category:'新手导览',level:'跨 SCL 层级',summary:'以原创教学片段顺读 SCL、IED、LDevice、LN、DataSet、GSEControl/GOOSE 与 Communication 网络配置的入门路径。',related:['scl','scd','ied','ldevice','ln','ln0','dataset','fcda','gsecontrol','goose','gse','extref','communication']},
  {id:'ied',zh:'IED',en:'Intelligent Electronic Device',aliases:['智能电子设备','保护装置','测控装置','合并单元'],category:'IED 与数据模型',level:'SCL 直接子元素',summary:'智能电子设备的通用模型。保护、测控、MU、智能终端和网关都可能以 IED 表示。',related:['accesspoint','ldevice','mu','ln']},
  {id:'substation',zh:'Substation',en:'Substation',aliases:['变电站','一次系统'],category:'一次系统',level:'SCL 直接子元素',summary:'从一次系统视角组织电压等级、间隔、导电设备和功能映射。',related:['voltagelevel','bay','lnode','scl']},
  {id:'communication',zh:'Communication',en:'Communication',aliases:['通信配置','网络配置'],category:'通信与过程层',level:'SCL 直接子元素',summary:'描述通信子网、IED 接入点、GOOSE 和采样值的网络侧配置。',related:['subnetwork','connectedap','goose','smv']},
