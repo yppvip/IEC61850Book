@@ -358,6 +358,41 @@
     return { fields, appid: header.appid, signals };
   }
 
+  function ipv4(bytes, offset) { return Array.from(bytes.slice(offset, offset + 4)).join('.'); }
+
+  function parseMmsCandidate(bytes, offset) {
+    if (offset + 20 > bytes.length) throw new Error('IPv4 头截断。');
+    const versionIhl = bytes[offset];
+    const version = versionIhl >> 4;
+    const ipLength = (versionIhl & 0x0f) * 4;
+    if (version !== 4 || ipLength < 20 || offset + ipLength > bytes.length) throw new Error('IPv4 版本或头长度无效。');
+    if (bytes[offset + 9] !== 6) return null;
+    const tcp = offset + ipLength;
+    if (tcp + 20 > bytes.length) throw new Error('TCP 头截断。');
+    const sourcePort = (bytes[tcp] << 8) | bytes[tcp + 1];
+    const destinationPort = (bytes[tcp + 2] << 8) | bytes[tcp + 3];
+    if (sourcePort !== 102 && destinationPort !== 102) return null;
+    const tcpLength = (bytes[tcp + 12] >> 4) * 4;
+    if (tcpLength < 20 || tcp + tcpLength > bytes.length) throw new Error('TCP 头长度无效。');
+    const payload = tcp + tcpLength;
+    const fields = [
+      { name: 'IPv4 Source', value: ipv4(bytes, offset + 12), offset: offset + 12, length: 4 }, { name: 'IPv4 Destination', value: ipv4(bytes, offset + 16), offset: offset + 16, length: 4 },
+      { name: 'TCP Source Port', value: String(sourcePort), offset: tcp, length: 2 }, { name: 'TCP Destination Port', value: String(destinationPort), offset: tcp + 2, length: 2 }
+    ];
+    let status = 'TCP/102 候选；等待流重组';
+    if (payload + 4 <= bytes.length && bytes[payload] === 0x03 && bytes[payload + 1] === 0x00) {
+      const tpktLength = (bytes[payload + 2] << 8) | bytes[payload + 3];
+      fields.push({ name: 'TPKT Version', value: '3', offset: payload, length: 1 }, { name: 'TPKT Length', value: String(tpktLength), offset: payload + 2, length: 2 });
+      if (tpktLength < 4) throw new Error('TPKT Length 小于 4。');
+      if (payload + tpktLength > bytes.length) status = 'TCP/102 + TPKT；当前帧不含完整 PDU，需流重组';
+      else {
+        status = 'TCP/102 + TPKT 候选；COTP/MMS 深度字段待流重组器支持';
+        if (payload + 7 <= bytes.length) fields.push({ name: 'COTP Header', value: hexBytes(bytes.slice(payload + 4, Math.min(payload + 11, payload + tpktLength))), offset: payload + 4, length: Math.min(7, tpktLength - 4) });
+      }
+    }
+    return { protocol: 'MMS/TCP 候选', status, source: `${ipv4(bytes, offset + 12)}:${sourcePort}`, destination: `${ipv4(bytes, offset + 16)}:${destinationPort}`, fields, signals: [] };
+  }
+
   function parseEthernet(frame) {
     const bytes = frame.bytes;
     if (frame.linkType !== ETHERNET_LINKTYPE) return { protocol: '未知链路类型', status: '未解析', fields: [] };
@@ -384,6 +419,7 @@
     try {
       if (etherType === 0x88b8) Object.assign(packet, parseGoose(bytes, offset), { protocol: 'GOOSE', status: '已解析' });
       if (etherType === 0x88ba) Object.assign(packet, parseSv(bytes, offset), { protocol: 'SV/SMV', status: '已解析' });
+      if (etherType === 0x0800) { const mms = parseMmsCandidate(bytes, offset); if (mms) Object.assign(packet, mms, { vlans, etherType, payloadOffset: offset }); }
     } catch (error) {
       if (etherType === 0x88b8 || etherType === 0x88ba) { packet.status = `解析错误：${error.message}`; packet.parseError = error.message; }
     }
@@ -472,5 +508,5 @@
     }
   });
   frameList.addEventListener('click', event => { const row = event.target.closest('[data-frame]'); if (row) selectFrame(Number(row.dataset.frame)); });
-  window.IEC61850PacketParser = { readPcap, readPcapng, parseEthernet, parseScl };
+  window.IEC61850PacketParser = { readPcap, readPcapng, parseEthernet, parseScl, parseMmsCandidate };
 }());
