@@ -4,6 +4,7 @@
 
 ## 已发布专题
 
+- `chapters/packet-parser.html`：离线导入 `.pcap` / `.pcapng` 和可选 `.scd` / `.icd` 的抓包解析工具。只解析已有数据，时间使用抓包帧时间戳；不抓包、不上传、不发送或重放报文。
 - `chapters/packet-analysis.html`：面向开发人员的 IEC 61850 报文解析，用原创最小字节流说明 MMS、GOOSE、SV/SMV 的报文组织、字段含义、Wireshark 分析和解析器实现。
 - `chapters/scd-in-ten-minutes.html`：面向新手的 SCD 十分钟导览，以原创小型片段串起 SCL、IED、LD、LN、DataSet、GOOSE 与网络侧 GSE。
 - `chapters/core-concept-comparisons.html`：一次设备/LN、IED/MU/智能终端、DO/DA/FC、GOOSE/SV/Report、ICD/CID/SCD 与值语义的易混概念速查。
