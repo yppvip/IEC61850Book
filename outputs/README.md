@@ -25,7 +25,7 @@
 - 所有页面、样式、脚本和术语数据均使用相对本地路径；没有 CDN、在线字体或在线 API。
 - `data/terms.js` 使用本地脚本载入而非 `fetch` JSON，因此可在双击打开的 `file://` 页面中工作。
 - 抓包解析工具优先支持 Ethernet 链路类型、经典 PCAP 和包含 Enhanced Packet Block 的 PCAPNG；GOOSE/SV 可逐层解码，MMS 当前提供 TCP/102、TPKT/COTP 候选识别并会标注需要 TCP 流重组的情况。
-- 导入匹配 SCD/ICD 后，GOOSE `allData` 可按 `GSEControl → DataSet → FCDA` 顺序关联信号。SV 的采样八位串只有在类型和字节布局可证明时才可拆分为通道值；否则保留原始 sample 与映射证据。
+- 导入匹配 SCD/ICD 后，GOOSE `allData` 可按 `GSEControl → DataSet → FCDA` 顺序关联信号，并在工程文件提供时显示可追溯描述、类型路径和枚举文本；未提供描述时对应单元格保持为空。时间线可筛选协议、APPID、信号和抓包时间，并可绘制已唯一映射且安全数值化的 ST/MX 信号；字符串、时间、未知值、冲突映射与证据不足的 SV sample 均禁用绘图。SV 的采样八位串只有在通道布局、类型、质量与比例可证明时才可拆分为通道值；否则保留原始 sample 与映射证据。
 - 术语数据格式见 `data/README.md`。扩充词条后应检查 `related` 中的每一个标识均存在。
 
 `scl-scd-help.html` 保留为早期单页帮助文档兼容入口；百科主入口为 `index.html`。

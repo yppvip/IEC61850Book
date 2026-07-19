@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SCL xmlns="http://www.iec.ch/61850/2003/SCL">
+  <Communication><SubNetwork name="ProcessBus" type="8-MMS"><ConnectedAP iedName="MU_DEMO" apName="AP1"><SMV ldInst="LD0" cbName="svcbRaw"><Address><P type="APPID">4000</P></Address></SMV></ConnectedAP></SubNetwork></Communication>
+  <IED name="MU_DEMO"><AccessPoint name="AP1"><Server><LDevice inst="LD0"><LN0 lnClass="LLN0" inst=""><DataSet name="dsSamples"><FCDA ldInst="LD0" lnClass="TCTR" lnInst="1" doName="Amp" daName="instMag.i" fc="MX" desc="A 相电流原始通道"/><FCDA ldInst="LD0" lnClass="TVTR" lnInst="1" doName="Vol" daName="instMag.i" fc="MX"/></DataSet><SampledValueControl name="svcbRaw" datSet="dsSamples" smvID="MU_DEMO/LD0$SV$svcbRaw"/></LN0><LN lnClass="TCTR" inst="1" lnType="TCTR_TYPE"/><LN lnClass="TVTR" inst="1" lnType="TVTR_TYPE"/></LDevice></Server></AccessPoint></IED>
+  <DataTypeTemplates><LNodeType id="TCTR_TYPE" lnClass="TCTR"><DO name="Amp" type="MV_TYPE"/></LNodeType><LNodeType id="TVTR_TYPE" lnClass="TVTR"><DO name="Vol" type="MV_TYPE"/></LNodeType><DOType id="MV_TYPE" cdc="MV" desc="采样测量量"><DA name="instMag" bType="Struct" type="ANALOG_VALUE" fc="MX"/></DOType><DAType id="ANALOG_VALUE"><BDA name="i" bType="INT32"/></DAType></DataTypeTemplates>
+</SCL>
