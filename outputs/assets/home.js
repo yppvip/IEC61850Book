@@ -1,6 +1,7 @@
 (function(){
   'use strict';
   const header=document.querySelector('.top'),shell=document.querySelector('.shell');if(!header||!shell)return;
+  document.body.classList.add('has-home-nav');const homeStyle=document.createElement('style');homeStyle.textContent='.has-home-nav{padding-top:45px}.has-home-nav .home-nav{position:fixed;top:0;right:0;left:0;z-index:20;box-shadow:0 1px 8px #18324b10}.has-home-nav .home-nav-inner{max-width:1440px}';document.head.append(homeStyle);
   header.className='home-hero';header.innerHTML='<div class="home-hero-inner"><h1>IEC 61850 离线知识库</h1><p>以一次系统、IED 数据模型、SCL 工程和通信服务为主线，建立可回溯的技术知识脉络。</p></div>';
   const nav=document.createElement('nav');nav.className='home-nav';nav.setAttribute('aria-label','一级导航');nav.innerHTML='<div class="home-nav-inner"><a class="active" href="#start">首页</a><a href="chapters/standard-model-index.html">标准文库</a><a href="chapters/core-concept-comparisons.html">技术知识</a><a href="chapters/ied-data-model.html">数据模型</a><a href="chapters/scd-in-ten-minutes.html">SCL 配置</a><a href="chapters/communication-process.html">通信协议</a><a href="chapters/engineering-practice.html">工程应用</a></div>';header.after(nav);shell.id='start';
   const grid=shell.querySelector('.grid'),topics=[...shell.querySelectorAll(':scope > .card')].find(card=>card.querySelector('h2')?.textContent.includes('已发布专题')),results=shell.querySelector('.results'),search=shell.querySelector('.search-panel');grid?.remove();topics?.remove();if(results){results.id='terms';results.classList.add('home-term-results');}
