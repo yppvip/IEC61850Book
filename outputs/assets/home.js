@@ -21,7 +21,7 @@
       <div class="site-nav-links">
         <a class="active" href="#start">首页</a>
         <a href="chapters/standard-library-overview.html">标准文库</a>
-        <a href="chapters/core-concept-comparisons.html">技术知识</a>
+        <a href="chapters/bay-and-automation-levels.html">技术知识</a>
         <a href="chapters/ied-data-model.html">数据模型</a>
         <a href="chapters/scd-in-ten-minutes.html">SCL 配置</a>
         <a href="chapters/communication-process.html">通信协议</a>
@@ -55,6 +55,10 @@
     standardStart.className = 'notice';
     standardStart.innerHTML = '<b>标准文库起点：</b><a href="chapters/standard-library-overview.html">概论：IEC 61850 / DL/T 860 体系与模型</a>，先理解 Bay、ACSI、IF1～IF10 与标准建模方法。';
     roadmap.querySelector('.component-grid')?.before(standardStart);
+    const knowledgeStart = document.createElement('p');
+    knowledgeStart.className = 'notice';
+    knowledgeStart.innerHTML = '<b>技术知识起点：</b><a href="chapters/bay-and-automation-levels.html">间隔、设备缩写与自动化层级</a>，从单线图、CT/VT、LN 缩写进入站控、间隔和过程层。';
+    roadmap.querySelector('.component-grid')?.after(knowledgeStart);
   }
 
   const input = document.querySelector('#term-search');

@@ -3,7 +3,7 @@
 
   const groups = [
     { id: 'library', label: '标准文库', entry: 'standard-library-overview.html', items: [['standard-library-overview.html', '概论：体系与模型'], ['standard-model-index.html', 'IEC 61850 标准模型'], ['engineering-files.html', 'SCL 与工程交换文件']] },
-    { id: 'knowledge', label: '技术知识', entry: 'core-concept-comparisons.html', items: [['core-concept-comparisons.html', '易混概念速查'], ['primary-and-roles.html', '一次系统与设备角色'], ['safety-and-test-boundaries.html', '安全与测试边界']] },
+    { id: 'knowledge', label: '技术知识', entry: 'bay-and-automation-levels.html', items: [['bay-and-automation-levels.html', '间隔、设备缩写与自动化层级'], ['core-concept-comparisons.html', '易混概念速查'], ['primary-and-roles.html', '一次系统与设备角色'], ['safety-and-test-boundaries.html', '安全与测试边界']] },
     { id: 'model', label: '数据模型', entry: 'ied-data-model.html', items: [['ied-data-model.html', 'IED 与数据模型'], ['ln-cdc-deep-index.html', 'LN / CDC 深度索引']] },
     { id: 'scl', label: 'SCL 配置', entry: 'scd-in-ten-minutes.html', items: [['scd-in-ten-minutes.html', '十分钟读懂 SCD'], ['scd-reading-toolbox.html', 'SCD 阅读工具箱'], ['annotated-xml-examples.html', '注释式 XML 示例库']] },
     { id: 'protocol', label: '通信协议', entry: 'communication-process.html', items: [['communication-process.html', '通信与过程层'], ['packet-analysis.html', '协议字段阅读']] },

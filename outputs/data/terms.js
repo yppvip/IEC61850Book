@@ -123,4 +123,8 @@ window.IEC61850_TERMS = [
 ,{id:'acsi',zh:'ACSI',en:'Abstract Communication Service Interface',aliases:['抽象通信服务接口','服务模型'],category:'标准文库',level:'抽象服务层',summary:'以独立于具体协议的方式描述 IEC 61850 对象及其数据访问、报告、控制、文件和发布订阅等服务语义；不是一个直接连接的网口 API。',related:['ied','ln','do','mms','goose','smv']}
 ,{id:'if1-if10',zh:'IF1～IF10 逻辑接口',en:'Logical Interfaces IF1 to IF10',aliases:['接口模型','变电站自动化系统接口模型','IF4','IF8','IF10'],category:'标准文库',level:'变电站自动化系统逻辑接口',summary:'IEC/TR 61850-1 用 IF1～IF10 标记层级间或层级内的典型逻辑信息交换；编号不等同于固定物理网络、端口或单一协议。',related:['acsi','bay','goose','smv','mms']}
 ,{id:'physical-node',zh:'物理节点（PN）',en:'Physical Node',aliases:['PN','物理节点','物理接点'],category:'标准文库',level:'功能实现分配',summary:'表示逻辑节点在物理设备或计算平台上的实现分配；不要与现场开入开出端子或物理接点混淆。',related:['ied','ln','bay']}
+,{id:'bay-and-automation-levels',zh:'间隔、设备缩写与自动化层级',en:'Bay, Device Terms and Automation Levels',aliases:['间隔类型','单线图','CT VT XCBR','站控层 间隔层 过程层'],category:'技术知识',level:'标准概论名词补充',summary:'解释间隔类型、单线图阅读、CT/VT 与高频逻辑节点缩写，并把它们放回站控层、间隔层和过程层理解。',related:['bay','ct','vt','xcbr','xswi','mmxu','tctr','cswi','ptoc','ptrc','cilo','cdc']}
+,{id:'ct',zh:'CT（电流互感器）',en:'Current Transformer',aliases:['电流互感器','CT'],category:'一次系统',level:'间隔一次设备',summary:'将一次回路电流按额定变比转换为测量、保护或采样使用的二次量；实物 CT 与 TCTR 逻辑节点不是同一对象。',related:['tctr','mmxu','bay','smv']}
+,{id:'vt',zh:'VT（电压互感器）',en:'Voltage Transformer',aliases:['电压互感器','PT','VT'],category:'一次系统',level:'间隔一次设备',summary:'将一次电压转换为测量、保护、同步或采样使用的二次量；具体绕组、接线和准确等级须依设计资料确认。',related:['tvtr','mmxu','bay','smv']}
+,{id:'automation-levels',zh:'站控层、间隔层与过程层',en:'Station, Bay and Process Levels',aliases:['站控层','间隔层','过程层','三层架构'],category:'技术知识',level:'变电站自动化逻辑层级',summary:'用于理解全站监视协调、间隔保护控制和一次过程接口的逻辑分层；不规定设备机柜、物理网络或协议的一一对应关系。',related:['bay','ied','goose','smv','if1-if10']}
 ];
