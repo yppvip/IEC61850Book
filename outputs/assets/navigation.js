@@ -2,7 +2,7 @@
   'use strict';
 
   const groups = [
-    { id: 'library', label: '标准文库', entry: 'standard-model-index.html', items: [['standard-model-index.html', 'IEC 61850 标准模型'], ['engineering-files.html', 'SCL 与工程交换文件']] },
+    { id: 'library', label: '标准文库', entry: 'standard-library-overview.html', items: [['standard-library-overview.html', '概论：体系与模型'], ['standard-model-index.html', 'IEC 61850 标准模型'], ['engineering-files.html', 'SCL 与工程交换文件']] },
     { id: 'knowledge', label: '技术知识', entry: 'core-concept-comparisons.html', items: [['core-concept-comparisons.html', '易混概念速查'], ['primary-and-roles.html', '一次系统与设备角色'], ['safety-and-test-boundaries.html', '安全与测试边界']] },
     { id: 'model', label: '数据模型', entry: 'ied-data-model.html', items: [['ied-data-model.html', 'IED 与数据模型'], ['ln-cdc-deep-index.html', 'LN / CDC 深度索引']] },
     { id: 'scl', label: 'SCL 配置', entry: 'scd-in-ten-minutes.html', items: [['scd-in-ten-minutes.html', '十分钟读懂 SCD'], ['scd-reading-toolbox.html', 'SCD 阅读工具箱'], ['annotated-xml-examples.html', '注释式 XML 示例库']] },
@@ -44,7 +44,7 @@
   </div>`;
   document.body.prepend(nav);
 
-  const standardTree = '<details open><summary>DL/T 860</summary><ul><li><span>系列概览（待整理）</span></li><li><details open><summary>DL/Z 860.1</summary><ul><li><details><summary>2004（待整理）</summary><ul><li>前言</li><li>1 范围</li><li>2 规范性引用文件</li><li><details><summary>3 术语和定义</summary><ul><li>3.1 …</li><li>3.2 …</li></ul></details></li></ul></details></li><li>2018（待整理）</li></ul></details></li><li>DL/T 860.2 ～ 860.6（待整理）</li><li>DL/T 860.71 ～ 860.74（待整理）</li><li>DL/T 860.81（待整理）</li></ul></details><details><summary>IEC 61850（待整理）</summary></details><details><summary>相关国家 / 行业标准（待整理）</summary></details>';
+  const standardTree = '<details open><summary>DL/T 860</summary><ul><li><a class="' + (current === 'standard-library-overview.html' ? 'current' : '') + '" href="standard-library-overview.html">概论：体系与模型</a></li><li><details open><summary>DL/Z 860.1</summary><ul><li><span>2004（版本资料待整理）</span></li><li><span>2018（版本资料待整理）</span></li></ul></details></li><li><a class="' + (current === 'standard-model-index.html' ? 'current' : '') + '" href="standard-model-index.html">类型与标准模型索引</a></li><li><a class="' + (current === 'engineering-files.html' ? 'current' : '') + '" href="engineering-files.html">SCL 与工程交换文件</a></li><li>DL/T 860.2 ～ 860.6（待整理）</li><li>DL/T 860.71 ～ 860.74（待整理）</li><li>DL/T 860.81（待整理）</li></ul></details><details><summary>IEC 61850（待整理）</summary></details><details><summary>相关国家 / 行业标准（待整理）</summary></details>';
   const topicTree = groups
     .filter(item => item.id !== group.id)
     .map(item => `<details><summary>${item.label}</summary><ul>${item.items.map(([file, label]) => `<li><a href="${file}">${label}</a></li>`).join('')}</ul></details>`)
