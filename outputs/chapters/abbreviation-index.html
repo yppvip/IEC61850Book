@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>缩写索引表｜IEC 61850 离线知识库</title><link rel="stylesheet" href="../assets/style.css"></head>
+<body><header class="top"><div class="chapter-nav"><a href="../index.html">← 返回百科首页</a></div><div class="chapter"><p class="section-kicker">标准文库 · IEC 61850-2 第 3 章缩写导读</p><h1>缩写、全拼、中文名与功能</h1><p>把当前知识库涉及的高频缩写放在同一张可检索、可持续补充的表中。</p></div></header>
+<main class="chapter">
+<section><h2>1. 表格范围与读法</h2><p>本表参照“变电站通信网络和系统 第 2 部分：术语”第 3 章的缩写主题，优先收录当前离线知识库和 SCD 阅读中已经涉及、且工程上常需辨认的术语。它是原创释义表，不逐字复现标准；“功能”描述术语在 IEC 61850 模型、工程文件或通信中的作用，不能替代设备能力、项目设计或现场结论。</p><div class="notice"><b>版本提示：</b>本表会随你后续提供的标准正文补齐。届时可按“标准条目 / 当前收录 / 版本差异”逐项核对，避免将不同版次或厂商扩展混写为标准必选项。</div></section>
+<section><h2>2. 缩写总表</h2><div class="table-scroll"><table><thead><tr><th>缩写</th><th>英文全拼</th><th>中文名</th><th>功能</th></tr></thead><tbody>
+<tr><td>ACSI</td><td>Abstract Communication Service Interface</td><td>抽象通信服务接口</td><td>以独立于具体协议的方式描述 IED 对象、数据访问、报告、控制和发布订阅等服务语义。</td></tr>
+<tr><td>AP</td><td>Access Point</td><td>接入点</td><td>IED 对外提供通信服务的入口；在 SCD 中与 <code>ConnectedAP</code> 的 <code>apName</code> 建立对应。</td></tr>
+<tr><td>BDA</td><td>Basic Data Attribute</td><td>基本数据属性</td><td>结构化 DA 内继续展开的基本成员，用于定位复合数据的具体组成。</td></tr>
+<tr><td>CDC</td><td>Common Data Class</td><td>公共数据类</td><td>定义一类数据对象的典型属性结构与服务语义，例如状态、测量或控制。</td></tr>
+<tr><td>CID</td><td>Configured IED Description</td><td>已配置 IED 描述文件</td><td>面向单台 IED 下装或使用的配置文件；其生成、导入和适用范围取决于工程工具及设备流程。</td></tr>
+<tr><td>DA</td><td>Data Attribute</td><td>数据属性</td><td>DO 内表达状态值、质量、时标、控制或设置等内容的属性；其用途通常由 FC 区分。</td></tr>
+<tr><td>DataSet</td><td>Data Set</td><td>数据集</td><td>按顺序组织 FCD/FCDA 成员，供报告、GOOSE 或 SV 等控制块引用。</td></tr>
+<tr><td>DO</td><td>Data Object</td><td>数据对象</td><td>LN 内表达一类功能数据的对象；其内部 DA/SDO 结构可沿类型模板追溯。</td></tr>
+<tr><td>FCD</td><td>Functional Constrained Data</td><td>功能约束数据</td><td>按功能约束可访问的数据概念，由 LN、DO 和 FC 共同定位；不是独立 XML 标签。</td></tr>
+<tr><td>FC</td><td>Functional Constraint</td><td>功能约束</td><td>区分数据属性的服务用途，如状态（ST）、测量（MX）、控制（CO）和设置（SP/SG/SE）。</td></tr>
+<tr><td>FCDA</td><td>Functional Constrained Data Attribute</td><td>功能约束数据属性</td><td>精确引用一个数据属性，是 DataSet 成员及 GOOSE/SV/报告引用追踪的关键锚点。</td></tr>
+<tr><td>GOOSE</td><td>Generic Object Oriented Substation Event</td><td>通用面向变电站事件对象</td><td>以发布订阅方式快速传递 DataSet 中的事件/状态信息，常用于跳闸、闭锁、联锁等。</td></tr>
+<tr><td>GSE</td><td>Generic Substation Event</td><td>通用变电站事件</td><td>在 SCL 通信配置中承载 GOOSE 网络侧关联信息的概念/元素；须与发布控制块、地址和订阅整体核对。</td></tr>
+<tr><td>ICD</td><td>IED Capability Description</td><td>IED 能力描述文件</td><td>描述 IED 模型和能力的工程交换文件，是系统配置与能力核对的重要输入。</td></tr>
+<tr><td>IED</td><td>Intelligent Electronic Device</td><td>智能电子设备</td><td>IEC 61850 的设备模型实体；保护、测控、MU、智能终端和网关均可能作为 IED 出现。</td></tr>
+<tr><td>LD</td><td>Logical Device</td><td>逻辑设备</td><td>IED 服务器内组织 LN0 和 LN 的逻辑容器，在 SCL 中通常对应 <code>LDevice</code>。</td></tr>
+<tr><td>LN</td><td>Logical Node</td><td>逻辑节点</td><td>按功能组织标准数据和服务的模型单元，如 PTOC、XCBR、MMXU；不等同于一台物理设备。</td></tr>
+<tr><td>LN0</td><td>Logical Node Zero</td><td>逻辑节点零实例</td><td>逻辑设备的公共 LN 实例，常承载 DataSet、报告、GOOSE/SV 控制块等公共功能。</td></tr>
+<tr><td>MMS</td><td>Manufacturing Message Specification</td><td>制造报文规范</td><td>常用于 IEC 61850 客户端/服务器通信映射，支撑读写、报告、控制等服务。</td></tr>
+<tr><td>MU</td><td>Merging Unit</td><td>合并单元</td><td>把互感器二次量采样数字化并发布采样值的典型过程层 IED 角色。</td></tr>
+<tr><td>RCB</td><td>Report Control Block</td><td>报告控制块</td><td>控制报告服务并引用 DataSet；触发选项、缓冲和可选字段需结合 IED 服务能力理解。</td></tr>
+<tr><td>SCD</td><td>Substation Configuration Description</td><td>变电站配置描述文件</td><td>汇集一次系统、IED、通信网络和数据类型模板的全站工程配置文件。</td></tr>
+<tr><td>SCL</td><td>Substation Configuration Language</td><td>变电站配置语言</td><td>IEC 61850 工程交换使用的 XML 语言，SCD、ICD、CID 等文件均以其语法表达。</td></tr>
+<tr><td>SV</td><td>Sampled Values</td><td>采样值</td><td>以发布订阅方式传输采样数据；接收侧须按 DataSet 顺序、通道和同步信息解释。</td></tr>
+<tr><td>SMV</td><td>Sampled Measured Values</td><td>采样测量值</td><td>工程中常与 SV 并用以指采样值通信/报文；具体命名以采用版次、SCL 元素和设备资料为准。</td></tr>
+<tr><td>VLAN</td><td>Virtual Local Area Network</td><td>虚拟局域网</td><td>二层网络隔离与优先级规划相关技术；在工程中结合 VLAN-ID、优先级、交换机和网络方案使用。</td></tr>
+</tbody></table></div></section>
+<section><h2>3. 继续阅读</h2><p>缩写解释应回到对象所在层级阅读：<a href="standard-terms.html">术语：对象、功能约束与 GOOSE</a>说明 FC/FCD/FCDA 和 GOOSE 引用链；<a href="ied-data-model.html">IED 与数据模型</a>展开 IED、LD、LN、DO 与 DA；<a href="scd-in-ten-minutes.html">十分钟读懂 SCD</a>将这些对象放回工程文件。</p></section>
+</main><footer class="foot">术语索引表为原创工程导读，当前以知识库已涉及术语为基础持续维护。标准缩写的完整性、版次差异和术语精确定义以项目引用的正式标准文本为准。</footer><script src="../assets/navigation.js"></script></body></html>
