@@ -2,12 +2,12 @@
   'use strict';
 
   const groups = [
-    { id: 'library', label: '标准文库', entry: 'standard-library-overview.html', items: [['standard-library-overview.html', '概论：体系与模型'], ['standard-terms.html', '第 2 部分：术语导读'], ['standard-part-6-scl.html', '第 6 部分：SCL 与 IED 通信配置'], ['abbreviation-index.html', '缩写、全拼、中文名与功能'], ['standard-model-index.html', 'IEC 61850 标准模型'], ['engineering-files.html', 'SCL 与工程交换文件']] },
-    { id: 'knowledge', label: '技术知识', entry: 'bay-and-automation-levels.html', items: [['bay-and-automation-levels.html', '间隔、设备缩写与自动化层级'], ['protection-ied-guide.html', '保护 IED 类型、部署与命名'], ['core-concept-comparisons.html', '易混概念速查'], ['primary-and-roles.html', '一次系统与设备角色'], ['safety-and-test-boundaries.html', '安全与测试边界']] },
-    { id: 'model', label: '数据模型', entry: 'ied-data-model.html', items: [['ied-data-model.html', 'IED 与数据模型'], ['ln-cdc-deep-index.html', 'LN / CDC 深度索引']] },
-    { id: 'scl', label: 'SCL 配置', entry: 'scd-in-ten-minutes.html', items: [['scd-in-ten-minutes.html', '十分钟读懂 SCD'], ['scd-reading-toolbox.html', 'SCD 阅读工具箱'], ['annotated-xml-examples.html', '注释式 XML 示例库']] },
-    { id: 'protocol', label: '通信协议', entry: 'communication-process.html', items: [['communication-process.html', '通信与过程层'], ['packet-analysis.html', '协议字段阅读']] },
-    { id: 'practice', label: '工程应用', entry: 'engineering-practice.html', items: [['engineering-practice.html', '工程实践与排障'], ['symptom-troubleshooting.html', '现象到排障路径库']] }
+    { id: 'library', label: '标准文库', entry: 'standard-library-overview.html', items: [['standard-part-7-1.html', '第 7-1 部分：原理与模型'], ['standard-library-overview.html', '概论：体系与模型'], ['standard-terms.html', '第 2 部分：术语导读'], ['standard-part-6-scl.html', '第 6 部分：SCL 与 IED 通信配置'], ['abbreviation-index.html', '缩写、全拼、中文名与功能'], ['standard-model-index.html', 'IEC 61850 标准模型'], ['engineering-files.html', 'SCL 与工程交换文件']] },
+    { id: 'knowledge', label: '技术知识', entry: 'bay-and-automation-levels.html', items: [['three-level-two-network.html', '三层两网、设备角色与英文缩写'], ['bay-and-automation-levels.html', '间隔、设备缩写与自动化层级'], ['protection-ied-guide.html', '保护 IED 类型、部署与命名'], ['core-concept-comparisons.html', '易混概念速查'], ['primary-and-roles.html', '一次系统与设备角色'], ['safety-and-test-boundaries.html', '安全与测试边界']] },
+    { id: 'model', label: '数据模型', entry: 'ied-data-model.html', items: [['data-attributes-reference.html', '数据、数据属性与 CDC 取值参考'], ['control-input-models.html', '公共 LN 信息、控制模型与输入模型'], ['ied-data-model.html', 'IED 与数据模型'], ['ln-cdc-deep-index.html', 'LN / CDC 深度索引']] },
+    { id: 'scl', label: 'SCL 配置', entry: 'scd-in-ten-minutes.html', items: [['control-blocks-reference.html', '数据集、属性集与控制块参考'], ['scd-model-evidence.html', '参考 SCD：脱敏证据与类型追踪'], ['scd-in-ten-minutes.html', '十分钟读懂 SCD'], ['scd-reading-toolbox.html', 'SCD 阅读工具箱'], ['annotated-xml-examples.html', '注释式 XML 示例库']] },
+    { id: 'protocol', label: '通信协议', entry: 'communication-process.html', items: [['acsi-services.html', 'ACSI 服务分类与功能全表'], ['service-mapping.html', '特定通信服务映射与报文格式'], ['communication-process.html', '通信与过程层'], ['packet-analysis.html', '协议字段阅读']] },
+    { id: 'practice', label: '工程应用', entry: 'engineering-practice.html', items: [['engineering-model-reading.html', '工程阅读：从功能到配置的证据检查'], ['engineering-practice.html', '工程实践与排障'], ['symptom-troubleshooting.html', '现象到排障路径库']] }
   ];
 
   const chapter = document.querySelector('main.chapter');
@@ -44,7 +44,7 @@
   </div>`;
   document.body.prepend(nav);
 
-  const standardTree = '<details open><summary>DL/T 860</summary><ul><li><a class="' + (current === 'standard-library-overview.html' ? 'current' : '') + '" href="standard-library-overview.html">概论：体系与模型</a></li><li><details open><summary>DL/Z 860.1</summary><ul><li><span>2004（版本资料待整理）</span></li><li><span>2018（版本资料待整理）</span></li></ul></details></li><li><a class="' + (current === 'standard-terms.html' ? 'current' : '') + '" href="standard-terms.html">第 2 部分：术语导读</a></li><li><a class="' + (current === 'standard-part-6-scl.html' ? 'current' : '') + '" href="standard-part-6-scl.html">第 6 部分：SCL 与 IED 通信配置</a></li><li><a class="' + (current === 'abbreviation-index.html' ? 'current' : '') + '" href="abbreviation-index.html">缩写、全拼、中文名与功能</a></li><li><a class="' + (current === 'standard-model-index.html' ? 'current' : '') + '" href="standard-model-index.html">类型与标准模型索引</a></li><li><a class="' + (current === 'engineering-files.html' ? 'current' : '') + '" href="engineering-files.html">SCL 与工程交换文件</a></li><li>DL/T 860.3 ～ 860.5（待整理）</li><li>DL/T 860.71 ～ 860.74（待整理）</li><li>DL/T 860.81（待整理）</li></ul></details><details><summary>IEC 61850（待整理）</summary></details><details><summary>相关国家 / 行业标准（待整理）</summary></details>';
+  const standardTree = '<details open><summary>DL/T 860</summary><ul><li><a class="' + (current === 'standard-library-overview.html' ? 'current' : '') + '" href="standard-library-overview.html">概论：体系与模型</a></li><li><details open><summary>DL/Z 860.1</summary><ul><li><span>2004（版本资料待整理）</span></li><li><span>2018（版本资料待整理）</span></li></ul></details></li><li><a class="' + (current === 'standard-terms.html' ? 'current' : '') + '" href="standard-terms.html">第 2 部分：术语导读</a></li><li><a class="' + (current === 'standard-part-6-scl.html' ? 'current' : '') + '" href="standard-part-6-scl.html">第 6 部分：SCL 与 IED 通信配置</a></li><li><a class="' + (current === 'abbreviation-index.html' ? 'current' : '') + '" href="abbreviation-index.html">缩写、全拼、中文名与功能</a></li><li><a class="' + (current === 'standard-model-index.html' ? 'current' : '') + '" href="standard-model-index.html">类型与标准模型索引</a></li><li><a class="' + (current === 'engineering-files.html' ? 'current' : '') + '" href="engineering-files.html">SCL 与工程交换文件</a></li><li>DL/T 860.3 ～ 860.5（待整理）</li><li><a href="standard-part-7-1.html">第 7-1 部分：原理与模型</a></li><li>第 7-2～7-4 部分（已用于关联导读，独立主章待整理）</li><li>DL/T 860.81（待整理）</li></ul></details><details><summary>IEC 61850（待整理）</summary></details><details><summary>相关国家 / 行业标准（待整理）</summary></details>';
   const topicTree = groups
     .filter(item => item.id !== group.id)
     .map(item => `<details><summary>${item.label}</summary><ul>${item.items.map(([file, label]) => `<li><a href="${file}">${label}</a></li>`).join('')}</ul></details>`)
@@ -63,7 +63,7 @@
     </div>
     <aside class="page-outline" aria-label="本页目录">
       <p class="side-title">本页目录</p>
-      ${headings.length ? `<ol>${headings.map(heading => `<li><a href="#${heading.id}">${heading.textContent}</a></li>`).join('')}</ol>` : '<p class="meta">本页暂无分节目录。</p>'}
+      ${headings.length ? `<ol>${headings.map(heading => `<li><a href="#${heading.id}">${heading.textContent.replace(/^\d+\.\s*/, '')}</a></li>`).join('')}</ol>` : '<p class="meta">本页暂无分节目录。</p>'}
     </aside>`;
   chapter.before(layout);
   layout.querySelector('.reading-content').append(chapter);

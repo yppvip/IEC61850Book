@@ -53,7 +53,7 @@
   if (roadmap) {
     const standardStart = document.createElement('p');
     standardStart.className = 'notice';
-    standardStart.innerHTML = '<b>标准文库起点：</b><a href="chapters/standard-library-overview.html">概论：IEC 61850 / DL/T 860 体系与模型</a>，先理解 Bay、ACSI、IF1～IF10 与标准建模方法。';
+    standardStart.innerHTML = '<b>标准文库起点：</b><a href="chapters/standard-library-overview.html">概论：IEC 61850 / DL/T 860 体系与模型</a>，先理解 Bay、ACSI、IF1～IF10 与标准建模方法；继续阅读 <a href="chapters/standard-part-7-1.html">第 7-1 部分：原理与模型</a>，进入 CDC、属性取值、控制/输入、服务与映射。';
     roadmap.querySelector('.component-grid')?.before(standardStart);
     const knowledgeStart = document.createElement('p');
     knowledgeStart.className = 'notice';
@@ -73,7 +73,7 @@
   const left = document.createElement('aside');
   left.className = 'side-tree';
   left.setAttribute('aria-label', '知识树');
-  left.innerHTML = '<p class="side-title">知识导航</p><details open><summary>起步</summary><ul><li><a href="chapters/core-concept-comparisons.html">易混概念速查</a></li><li><a href="chapters/primary-and-roles.html">一次系统与设备角色</a></li></ul></details><details><summary>模型与配置</summary><ul><li><a href="chapters/ied-data-model.html">IED 与数据模型</a></li><li><a href="chapters/scd-in-ten-minutes.html">十分钟读懂 SCD</a></li></ul></details><details><summary>通信与工程</summary><ul><li><a href="chapters/communication-process.html">通信与过程层</a></li><li><a href="chapters/engineering-practice.html">工程实践与排障</a></li></ul></details>';
+  left.innerHTML = '<p class="side-title">知识导航</p><details open><summary>标准文库</summary><ul><li><a href="chapters/standard-part-7-1.html">第 7-1 部分：原理与模型</a></li></ul></details><details><summary>技术知识</summary><ul><li><a href="chapters/three-level-two-network.html">三层两网、设备角色与英文缩写</a></li></ul></details><details><summary>数据模型</summary><ul><li><a href="chapters/data-attributes-reference.html">数据、数据属性与 CDC 取值参考</a></li><li><a href="chapters/control-input-models.html">公共 LN 信息、控制模型与输入模型</a></li></ul></details><details><summary>SCL 配置</summary><ul><li><a href="chapters/control-blocks-reference.html">数据集、属性集与控制块参考</a></li><li><a href="chapters/scd-model-evidence.html">参考 SCD：脱敏证据与类型追踪</a></li></ul></details><details><summary>通信协议</summary><ul><li><a href="chapters/acsi-services.html">ACSI 服务分类与功能全表</a></li><li><a href="chapters/service-mapping.html">特定通信服务映射与报文格式</a></li></ul></details><details><summary>工程应用</summary><ul><li><a href="chapters/engineering-model-reading.html">工程阅读：从功能到配置的证据检查</a></li></ul></details><details open><summary>起步</summary><ul><li><a href="chapters/core-concept-comparisons.html">易混概念速查</a></li><li><a href="chapters/primary-and-roles.html">一次系统与设备角色</a></li></ul></details><details><summary>模型与配置</summary><ul><li><a href="chapters/ied-data-model.html">IED 与数据模型</a></li><li><a href="chapters/scd-in-ten-minutes.html">十分钟读懂 SCD</a></li></ul></details><details><summary>通信与工程</summary><ul><li><a href="chapters/communication-process.html">通信与过程层</a></li><li><a href="chapters/engineering-practice.html">工程实践与排障</a></li></ul></details>';
   const right = document.createElement('aside');
   right.className = 'page-outline';
   right.setAttribute('aria-label', '首页目录');
