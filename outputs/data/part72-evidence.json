@@ -1,0 +1,143 @@
+{
+  "source": "source/南雷变2026041614.scd",
+  "sha256": "779aa32b641d38dd82bf78c66d48354b9f6e4c21b594f4da38fe3a7e431468d6",
+  "rootAttributes": {
+    "release": "4",
+    "revision": "B",
+    "version": "2007",
+    "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation": "http://www.iec.ch/61850/2003/SCL SCL.xsd"
+  },
+  "counts": {
+    "SCL": 1,
+    "Private": 283,
+    "Header": 1,
+    "History": 1,
+    "Hitem": 19,
+    "Communication": 1,
+    "SubNetwork": 4,
+    "ConnectedAP": 226,
+    "Address": 361,
+    "P": 4976,
+    "PhysConn": 833,
+    "GSE": 226,
+    "MinTime": 226,
+    "MaxTime": 226,
+    "SMV": 19,
+    "IED": 82,
+    "Services": 82,
+    "DynAssociation": 64,
+    "GetDirectory": 64,
+    "GetDataObjectDefinition": 64,
+    "DataObjectDirectory": 64,
+    "GetDataSetValue": 64,
+    "SetDataSetValue": 51,
+    "DataSetDirectory": 57,
+    "ConfDataSet": 82,
+    "ReadWrite": 66,
+    "ConfReportControl": 64,
+    "GetCBValues": 64,
+    "ReportSettings": 64,
+    "FileHandling": 63,
+    "ConfLNs": 64,
+    "AccessPoint": 168,
+    "Server": 168,
+    "Authentication": 168,
+    "LDevice": 344,
+    "LN0": 344,
+    "DataSet": 1431,
+    "FCDA": 54115,
+    "ReportControl": 979,
+    "TrgOps": 1077,
+    "OptFields": 979,
+    "RptEnabled": 979,
+    "DOI": 91190,
+    "DAI": 310711,
+    "Val": 222067,
+    "SDI": 53753,
+    "LN": 6885,
+    "GOOSE": 76,
+    "GSEControl": 226,
+    "Inputs": 62,
+    "ExtRef": 2658,
+    "SettingGroups": 38,
+    "SGEdit": 38,
+    "ConfSG": 33,
+    "DynDataSet": 39,
+    "ConfLogControl": 44,
+    "LogSettings": 38,
+    "GSESettings": 33,
+    "LogControl": 98,
+    "SettingControl": 38,
+    "linkRef": 558,
+    "SampledValueControl": 19,
+    "SmvOpts": 19,
+    "TimerActivatedControl": 7,
+    "DataTypeTemplates": 1,
+    "LNodeType": 987,
+    "DO": 17419,
+    "DOType": 735,
+    "DA": 5983,
+    "SDO": 506,
+    "DAType": 107,
+    "BDA": 271,
+    "EnumType": 115,
+    "EnumVal": 4467
+  },
+  "examples": {
+    "ReportControl": {
+      "position": "IED=C_G1101X / AccessPoint=S1 / LDevice=LD0 / LN=LLN0",
+      "attributes": {
+        "bufTime": "100",
+        "buffered": "true",
+        "confRev": "1",
+        "datSet": "dsRelayEna",
+        "desc": "软压板",
+        "intgPd": "0",
+        "name": "brcbRelayEna",
+        "rptID": "NULL"
+      }
+    },
+    "LogControl": {
+      "position": "IED=PCK1101X / AccessPoint=S1 / LDevice=LD0 / LN=LLN0",
+      "attributes": {
+        "datSet": "dsLog1",
+        "desc": "装置告警事件日志1",
+        "intgPd": "0",
+        "logEna": "true",
+        "logName": "LD0",
+        "name": "lcbLogA"
+      }
+    },
+    "GSEControl": {
+      "position": "IED=C_M1101X / AccessPoint=S1 / LDevice=MEAS / LN=LLN0",
+      "attributes": {
+        "appID": "C_M1101XMEAS/LLN0$GO$GO_Gcb1",
+        "confRev": "1",
+        "datSet": "dsGOOSE1",
+        "desc": "GOOSE发送",
+        "name": "GO_Gcb1",
+        "type": "GOOSE"
+      }
+    },
+    "SampledValueControl": {
+      "position": "IED=PCK1001X / AccessPoint=M1 / LDevice=PISV / LN=LLN0",
+      "attributes": {
+        "confRev": "1",
+        "datSet": "dsSV",
+        "name": "smvcb1",
+        "nofASDU": "1",
+        "smpRate": "80",
+        "smvID": "PCK1001XPISV/LLN0$MS$smvcb1"
+      }
+    },
+    "SettingControl": {
+      "position": "IED=PCK1101X / AccessPoint=S1 / LDevice=PROT / LN=LLN0",
+      "attributes": {
+        "actSG": "1",
+        "desc": "DFESetting",
+        "numOfSGs": "15"
+      }
+    }
+  },
+  "boundary": "XML structure and observed configuration only; no full XSD validation or device/field verification."
+}

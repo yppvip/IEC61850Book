@@ -2,19 +2,19 @@
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>缩写索引表｜IEC 61850 离线知识库</title><link rel="stylesheet" href="../assets/style.css"></head>
 <body><header class="top"><div class="chapter-nav"><a href="../index.html">← 返回百科首页</a></div><div class="chapter"><p class="section-kicker">标准文库 · IEC 61850-2 第 3 章缩写导读</p><h1>缩写、全拼、中文名与功能</h1><p>把当前知识库涉及的高频缩写放在同一张可检索、可持续补充的表中。</p></div></header>
 <main class="chapter">
-<section><h2>1. 表格范围与读法</h2><p>本表参照“变电站通信网络和系统 第 2 部分：术语”第 3 章的缩写主题，优先收录当前离线知识库和 SCD 阅读中已经涉及、且工程上常需辨认的术语。它是原创释义表，不逐字复现标准；“功能”描述术语在 IEC 61850 模型、工程文件或通信中的作用，不能替代设备能力、项目设计或现场结论。</p><div class="notice"><b>版本提示：</b>本表会随你后续提供的标准正文补齐。届时可按“标准条目 / 当前收录 / 版本差异”逐项核对，避免将不同版次或厂商扩展混写为标准必选项。</div></section>
+<section><h2>1. 表格范围与读法</h2><p>本表参照“变电站通信网络和系统 第 2 部分：术语”第 3 章的缩写主题，优先收录当前离线知识库和 SCD 阅读中已经涉及、且工程上常需辨认的术语。它是原创释义表，不逐字复现标准；“功能”描述术语在 IEC 61850 模型、工程文件或通信中的作用，不能替代设备能力、项目设计或现场结论。</p><div class="notice"><b>版本提示：</b>本次已按所给第 7-2 部分补充 AA、报告、定值、公共类型和触发相关条目。届时可按“标准条目 / 当前收录 / 版本差异”逐项核对，避免将不同版次或厂商扩展混写为标准必选项。</div></section>
 <section><h2>2. 缩写总表</h2><div class="table-scroll"><table><thead><tr><th>缩写</th><th>英文全拼</th><th>中文名</th><th>功能</th></tr></thead><tbody>
-<tr><td>ACSI</td><td>Abstract Communication Service Interface</td><td>抽象通信服务接口</td><td>以独立于具体协议的方式描述 IED 对象、数据访问、报告、控制和发布订阅等服务语义。</td></tr>
+
 <tr><td>AP</td><td>Access Point</td><td>接入点</td><td>IED 对外提供通信服务的入口；在 SCD 中与 <code>ConnectedAP</code> 的 <code>apName</code> 建立对应。</td></tr>
 <tr><td>BDA</td><td>Basic Data Attribute</td><td>基本数据属性</td><td>结构化 DA 内继续展开的基本成员，用于定位复合数据的具体组成。</td></tr>
-<tr><td>CDC</td><td>Common Data Class</td><td>公共数据类</td><td>定义一类数据对象的典型属性结构与服务语义，例如状态、测量或控制。</td></tr>
+
 <tr><td>CID</td><td>Configured IED Description</td><td>已配置 IED 描述文件</td><td>面向单台 IED 下装或使用的配置文件；其生成、导入和适用范围取决于工程工具及设备流程。</td></tr>
 <tr><td>DA</td><td>Data Attribute</td><td>数据属性</td><td>DO 内表达状态值、质量、时标、控制或设置等内容的属性；其用途通常由 FC 区分。</td></tr>
 <tr><td>DataSet</td><td>Data Set</td><td>数据集</td><td>按顺序组织 FCD/FCDA 成员，供报告、GOOSE 或 SV 等控制块引用。</td></tr>
 <tr><td>DO</td><td>Data Object</td><td>数据对象</td><td>LN 内表达一类功能数据的对象；其内部 DA/SDO 结构可沿类型模板追溯。</td></tr>
-<tr><td>FCD</td><td>Functional Constrained Data</td><td>功能约束数据</td><td>按功能约束可访问的数据概念，由 LN、DO 和 FC 共同定位；不是独立 XML 标签。</td></tr>
-<tr><td>FC</td><td>Functional Constraint</td><td>功能约束</td><td>区分数据属性的服务用途，如状态（ST）、测量（MX）、控制（CO）和设置（SP/SG/SE）。</td></tr>
-<tr><td>FCDA</td><td>Functional Constrained Data Attribute</td><td>功能约束数据属性</td><td>精确引用一个数据属性，是 DataSet 成员及 GOOSE/SV/报告引用追踪的关键锚点。</td></tr>
+
+
+
 <tr><td>GOOSE</td><td>Generic Object Oriented Substation Event</td><td>通用面向变电站事件对象</td><td>以发布订阅方式快速传递 DataSet 中的事件/状态信息，常用于跳闸、闭锁、联锁等。</td></tr>
 <tr><td>GSE</td><td>Generic Substation Event</td><td>通用变电站事件</td><td>在 SCL 通信配置中承载 GOOSE 网络侧关联信息的概念/元素；须与发布控制块、地址和订阅整体核对。</td></tr>
 <tr><td>ICD</td><td>IED Capability Description</td><td>IED 能力描述文件</td><td>描述 IED 模型和能力的工程交换文件，是系统配置与能力核对的重要输入。</td></tr>
@@ -26,10 +26,38 @@
 <tr><td>MU</td><td>Merging Unit</td><td>合并单元</td><td>把互感器二次量采样数字化并发布采样值的典型过程层 IED 角色。</td></tr>
 <tr><td>RCB</td><td>Report Control Block</td><td>报告控制块</td><td>控制报告服务并引用 DataSet；触发选项、缓冲和可选字段需结合 IED 服务能力理解。</td></tr>
 <tr><td>SCD</td><td>Substation Configuration Description</td><td>变电站配置描述文件</td><td>汇集一次系统、IED、通信网络和数据类型模板的全站工程配置文件。</td></tr>
-<tr><td>SCL</td><td>Substation Configuration Language</td><td>变电站配置语言</td><td>IEC 61850 工程交换使用的 XML 语言，SCD、ICD、CID 等文件均以其语法表达。</td></tr>
+
 <tr><td>SV</td><td>Sampled Values</td><td>采样值</td><td>以发布订阅方式传输采样数据；接收侧须按 DataSet 顺序、通道和同步信息解释。</td></tr>
 <tr><td>SMV</td><td>Sampled Measured Values</td><td>采样测量值</td><td>工程中常与 SV 并用以指采样值通信/报文；具体命名以采用版次、SCL 元素和设备资料为准。</td></tr>
 <tr><td>VLAN</td><td>Virtual Local Area Network</td><td>虚拟局域网</td><td>二层网络隔离与优先级规划相关技术；在工程中结合 VLAN-ID、优先级、交换机和网络方案使用。</td></tr>
+<tr><td>AA</td><td>Application Association</td><td>应用关联</td><td>关联模型：通信双方及其访问上下文；包括 TPAA、MCAA。 <a href="acsi-server-associations.html#association">详解</a></td></tr>
+<tr><td>ACSI</td><td>Abstract Communication Service Interface</td><td>抽象通信服务接口</td><td>接口体系：定义对象、服务及行为；描述功能用 ACSI，描述线上编码进入 SCSM。 <a href="acsi-abstraction.html#two-abstractions">详解</a></td></tr>
+<tr><td>BRCB</td><td>Buffered Report Control Block</td><td>缓存报告控制块</td><td>模型类：按触发组织并缓存报告事件；恢复时核对 EntryID、溢出与保留范围。 <a href="acsi-runtime-models.html#report">详解</a></td></tr>
+<tr><td>CDC</td><td>Common Data Class</td><td>公用数据类</td><td>数据类：规定共用属性结构，如 DPC、SPS、MV；SCD DOType@cdc 表达类别。 <a href="acsi-runtime-models.html#data">详解</a></td></tr>
+<tr><td>DAType</td><td>Data Attribute Type</td><td>数据属性类型</td><td>类型名：ACSI 泛指属性类型；SCL DAType/BDA 描述结构属性，叶子用 bType。 <a href="acsi-common-types.html#basic">详解</a></td></tr>
+<tr><td>DataRef</td><td>Data Reference</td><td>数据引用</td><td>属性名：DATA 完整路径，如 C_G1101XLD0/LLN0.FunEna1；没有同名 SCL 标签。 <a href="acsi-common-types.html#references">详解</a></td></tr>
+<tr><td>dchg</td><td>Data Change</td><td>数据变化</td><td>触发选项：值按 CDC 规则变化时触发，测量还需考虑死区；DA 特征和控制块采用选项分层。 <a href="acsi-common-types.html#triggers">详解</a></td></tr>
+<tr><td>dupd</td><td>Data Update</td><td>数据刷新</td><td>触发选项：属性刷新可触发，值不必不同；不等于周期完整性报告。 <a href="acsi-common-types.html#triggers">详解</a></td></tr>
+<tr><td>FC</td><td>Functional Constraint</td><td>功能约束</td><td>访问分类：按用途筛选 DA，如 ST、MX、CO、SV、SG、SE；不等于操作授权。 <a href="acsi-runtime-models.html#fc">详解</a></td></tr>
+<tr><td>FCD</td><td>Functionally Constrained Data</td><td>功能约束数据</td><td>引用形式：DO 与 FC 的组合，选择此 DO 在该 FC 下的属性集合；FCDA 省略 daName 可表达 FCD。 <a href="acsi-runtime-models.html#dataset">详解</a></td></tr>
+<tr><td>FCDA</td><td>Functionally Constrained Data Attribute</td><td>功能约束数据属性</td><td>引用形式 / XML 元素：属性与 FC 的组合；SCL FCDA 也能表达 FCD，按 doName/daName/fc 区分。 <a href="scd-acsi-evidence.html#goose-evidence">详解</a></td></tr>
+<tr><td>GI</td><td>General Interrogation</td><td>总召唤</td><td>运行命令：客户请求当前数据集完整快照；TrgOps.gi 是选项，运行 GI=true 才是启动。 <a href="acsi-runtime-models.html#report">详解</a></td></tr>
+<tr><td>intgPd</td><td>Integrity Period</td><td>完整性周期</td><td>属性名：单位 ms；ACSI 通常写 IntgPd，XML 写 intgPd；0 不产生周期完整性报告。 <a href="acsi-common-types.html#triggers">详解</a></td></tr>
+<tr><td>LCB</td><td>Log Control Block</td><td>日志控制块</td><td>模型类：决定哪些数据按何种触发写入 LOG；LogControl 是配置，不包含历史条目。 <a href="acsi-runtime-models.html#log">详解</a></td></tr>
+<tr><td>qchg</td><td>Quality Change</td><td>品质变化</td><td>触发选项：品质变化可触发，即使数值不变；DA@qchg 与 TrgOps@qchg 分层。 <a href="acsi-common-types.html#triggers">详解</a></td></tr>
+<tr><td>SBO</td><td>Select Before Operate</td><td>操作前选择</td><td>控制模型：先选择再操作；普通安全用 Select，增强安全用 SelectWithValue，并受超时约束。 <a href="acsi-runtime-models.html#control">详解</a></td></tr>
+<tr><td>SCL</td><td>Substation Configuration Language</td><td>变电站配置语言</td><td>工程语言：XML 工程交换语言；SCD 是文件类型，服务请求和响应不写成 SCD 标签。 <a href="scd-acsi-evidence.html#positions">详解</a></td></tr>
+<tr><td>SG</td><td>Setting Group</td><td>定值组</td><td>参数集合 / FC：共同切换的一组参数；FC=SG 为激活视图，FC=SE 为编辑视图。 <a href="acsi-runtime-models.html#settings">详解</a></td></tr>
+<tr><td>SGCB</td><td>Setting Group Control Block</td><td>定值组控制块</td><td>模型类：管理组数、激活、编辑和确认；LLN0/SettingControl 表达工程配置。 <a href="acsi-runtime-models.html#settings">详解</a></td></tr>
+<tr><td>TrgOp</td><td>Trigger Option</td><td>触发选项</td><td>属性特征：属性事件能力；控制块 TrgOps 选择采用哪些事件；DA 的 dchg 不证明报告已使能。 <a href="acsi-common-types.html#triggers">详解</a></td></tr>
+<tr><td>URCB</td><td>Unbuffered Report Control Block</td><td>非缓存报告控制块</td><td>模型类：连接期间尽力报告；不按 BRCB 方式补送断线期间事件。 <a href="acsi-runtime-models.html#report">详解</a></td></tr>
+<tr><td>TPAA</td><td>Two Party Application Association</td><td>双边应用关联</td><td>模型类：双向、面向连接；Associate 建立，Release 正常释放，Abort 异常中止。 <a href="acsi-server-associations.html#tpaa">详解</a></td></tr>
+<tr><td>MCAA</td><td>Multicast Application Association</td><td>多路广播应用关联</td><td>模型类：发布者向一个或多个订户单向发送无确认信息；不逐个订户执行 Associate。 <a href="acsi-server-associations.html#mcaa">详解</a></td></tr>
+<tr><td>SCSM</td><td>Specific Communication Service Mapping</td><td>特定通信服务映射</td><td>映射规范：将抽象类和服务映射到具体寻址、协议与编码，如 8-1、9-2。 <a href="acsi-abstraction.html#interfaces">详解</a></td></tr>
+<tr><td>EntryID</td><td>Entry Identifier</td><td>条目标识符</td><td>公共类型：报告恢复和日志查询使用的不透明字节串；不是业务编号或时间。 <a href="acsi-common-types.html#entry">详解</a></td></tr>
+<tr><td>EntryTime</td><td>Entry Time</td><td>条目时间</td><td>公共类型：报告、日志与通信子系统的条目相关时间；表示由 SCSM 定义。 <a href="acsi-common-types.html#entry">详解</a></td></tr>
+<tr><td>TimeStamp</td><td>Time Stamp</td><td>时标</td><td>公共类型：由纪元秒、秒的小数、时间品质组成；可表示分辨率不证明设备准确度。 <a href="acsi-common-types.html#timestamp">详解</a></td></tr>
+<tr><td>PACKED-LIST</td><td>Packed List</td><td>压缩表</td><td>公共类型：有序分量的紧凑编码，不能通过该类型独立访问分量；不是文件压缩。 <a href="acsi-common-types.html#packed">详解</a></td></tr>
 </tbody></table></div></section>
 <section><h2>3. 继续阅读</h2><p>缩写解释应回到对象所在层级阅读：<a href="standard-terms.html">术语：对象、功能约束与 GOOSE</a>说明 FC/FCD/FCDA 和 GOOSE 引用链；<a href="ied-data-model.html">IED 与数据模型</a>展开 IED、LD、LN、DO 与 DA；<a href="scd-in-ten-minutes.html">十分钟读懂 SCD</a>将这些对象放回工程文件。</p></section>
-<section><h2 id="part71-reading">第 7-1 部分关联阅读</h2><p><a href="three-level-two-network.html">三层两网、设备角色与英文缩写</a> · <a href="acsi-services.html">ACSI 服务分类与功能全表</a></p><p>新专题补充早期标准基线、参考工程证据及版次差异，请按各页来源说明使用。</p></section></main><footer class="foot">术语索引表为原创工程导读，当前以知识库已涉及术语为基础持续维护。标准缩写的完整性、版次差异和术语精确定义以项目引用的正式标准文本为准。</footer><script src="../assets/navigation.js"></script></body></html>
+<section><h2 id="part71-reading">第 7-1 部分关联阅读</h2><p><a href="three-level-two-network.html">三层两网、设备角色与英文缩写</a> · <a href="acsi-services.html">ACSI 服务分类与功能全表</a></p><p>新专题补充早期标准基线、参考工程证据及版次差异，请按各页来源说明使用。</p></section><section><h2 id="part72-reading">第 7-2 部分术语与类型</h2><p><a href="standard-part-7-2.html#abbreviations">缩写、属性名与类型名详表</a> · <a href="acsi-common-types.html">公共类型及引用规则</a></p><p>ACSI 模型表名称与 SCL XML 拼写分别说明，不把运行服务参数当作文件标签。</p></section></main><footer class="foot">术语索引表为原创工程导读，当前以知识库已涉及术语为基础持续维护。标准缩写的完整性、版次差异和术语精确定义以项目引用的正式标准文本为准。</footer><script src="../assets/navigation.js"></script></body></html>
