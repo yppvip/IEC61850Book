@@ -29,6 +29,8 @@ for path,page in pages.items():
    # Index terms and navigation headings are populated from local JS.
    if target!=OUT/'index.html':errors.append(f'{path.name}: missing anchor {value}')
 new=['standard-part-7-2','acsi-abstraction','acsi-common-types','acsi-server-associations','acsi-runtime-models','scd-acsi-evidence','acsi-engineering-workflows']
+part73=['standard-part-7-3','cdc-common-types','cdc-status','cdc-measurement','cdc-control','cdc-setting','cdc-description','cdc-attribute-dictionary','cdc-units-fc','cdc-scd-evidence']
+new+=part73
 svg_count=xml_count=table_count=0
 for stem in new:
  path=OUT/'chapters'/f'{stem}.html';text=texts[path];table_count+=pages[path].tables
@@ -45,12 +47,12 @@ for stem in new:
   import html
   try:ET.fromstring(html.unescape(raw));xml_count+=1
   except ET.ParseError as exc:errors.append(f'{stem}: XML example {exc}')
-node=Path('C:/Users/ypp/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe')
-js="global.window={};require('./outputs/data/terms.js');require('./outputs/data/part72-terms.js');process.stdout.write(JSON.stringify(window.IEC61850_TERMS));"
+node=Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe'
+js="global.window={};require('./outputs/data/terms.js');require('./outputs/data/part72-terms.js');require('./outputs/data/part73-terms.js');process.stdout.write(JSON.stringify(window.IEC61850_TERMS));"
 terms=json.loads(subprocess.check_output([str(node),'-e',js],cwd=ROOT))
 ids=[t['id'] for t in terms]
 if len(ids)!=len(set(ids)):errors.append('duplicate term IDs')
-required='AA ACSI BRCB CDC DAType DataRef dchg dupd FC FCD FCDA GI intgPd LCB qchg SBO SCL SG SGCB TrgOp URCB'.split()
+required='AA ACSI BRCB CDC DAType DataRef dchg dupd FC FCD FCDA GI intgPd LCB qchg SBO SCL SG SGCB TrgOp URCB M O C SP RMS SI BDA SDO'.split()
 for word in required:
  matching=[t for t in terms if word in t.get('aliases',[]) or word==t.get('en')]
  if not matching:errors.append('missing term '+word)
@@ -59,11 +61,32 @@ for t in terms:
  if t.get('href'):
   u=urlsplit(t['href']);target=(OUT/unquote(u.path)).resolve()
   if not target.exists() or (u.fragment and target in pages and unquote(u.fragment) not in pages[target].ids):errors.append('invalid term link '+t['id'])
- if t['id'].startswith('acsi72-') or t['id'].startswith('part72-'):
+ if t['id'].startswith(('acsi72-','part72-','part73-','cdc-','da-','fc-','presence-')):
   for rel in t.get('related',[]):
    if rel not in ids:errors.append(f"{t['id']}: missing related {rel}")
-for f in [OUT/'assets/navigation.js',OUT/'assets/home.js',OUT/'data/part72-terms.js']:
+for f in [OUT/'assets/navigation.js',OUT/'assets/home.js',OUT/'data/part72-terms.js',OUT/'data/part73-terms.js']:
  subprocess.run([str(node),'--check',str(f)],check=True)
 evidence=json.loads((OUT/'data/part72-evidence.json').read_text(encoding='utf-8'))
-print(json.dumps({'html_pages':len(pages),'new_pages':len(new),'new_tables':table_count,'new_svg':svg_count,'parseable_xml_examples':xml_count,'terms':len(terms),'required_abbreviations':len(required),'errors':errors},ensure_ascii=False,indent=2))
+from part73_data import CDC,DICTIONARY,CONDITIONS
+part73_data=json.loads((OUT/'data/part73-evidence.json').read_text(encoding='utf-8'))
+expected={'baseline_cdc_count':29,'table49_unique_names':116,'unit_rows':58,'multiplier_prefixes':20,'fc_rows':18,'do_types':735}
+for key,val in expected.items():
+ if part73_data.get(key)!=val:errors.append('7-3 evidence coverage '+key)
+if len(CONDITIONS)!=20:errors.append('7-3 conditions coverage')
+dictionary=pages[OUT/'chapters/cdc-attribute-dictionary.html']
+for n in DICTIONARY:
+ if 'da-'+n not in dictionary.ids:errors.append('7-3 missing dictionary '+n)
+for c in CDC:
+ target=pages[OUT/'chapters'/('cdc-'+c['group']+'.html')]
+ if c['code'].lower() not in target.ids:errors.append('7-3 missing CDC '+c['code'])
+ if any(len(r)!=7 for r in c['fields']):errors.append('7-3 malformed fields '+c['code'])
+for name in part73:
+ t=texts[OUT/'chapters'/(name+'.html')]
+ if re.search(r'\b(?:fetch|WebSocket|XMLHttpRequest)\s*\(',t):errors.append('7-3 network dependency '+name)
+for f in ['assets/navigation.js','assets/home.js']:
+ t=(OUT/f).read_text(encoding='utf-8')
+ for filename in re.findall(r"(?:chapters/)?([a-z][a-z0-9-]+\.html)",t):
+  if not (OUT/'chapters'/filename).exists() and not (OUT/filename).exists():errors.append('missing navigation '+filename)
+part73_stats={'pages':len(part73),'tables':sum(pages[OUT/'chapters'/(n+'.html')].tables for n in part73),'svg':sum(len(re.findall(r'<svg\b',texts[OUT/'chapters'/(n+'.html')])) for n in part73),'xml_examples':sum(len(re.findall(r'<pre data-language="xml">',texts[OUT/'chapters'/(n+'.html')])) for n in part73)}
+print(json.dumps({'html_pages':len(pages),'checked_supplement_pages':len(new),'tables':table_count,'svg':svg_count,'parseable_xml_examples':xml_count,'part73':part73_stats,'terms':len(terms),'required_abbreviations':len(required),'errors':errors},ensure_ascii=False,indent=2))
 raise SystemExit(bool(errors))

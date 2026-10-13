@@ -1,0 +1,817 @@
+{
+  "source": "source/南雷变2026041614.scd",
+  "sha256": "779aa32b641d38dd82bf78c66d48354b9f6e4c21b594f4da38fe3a7e431468d6",
+  "root": {
+    "release": "4",
+    "revision": "B",
+    "version": "2007",
+    "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation": "http://www.iec.ch/61850/2003/SCL SCL.xsd"
+  },
+  "cdc_counts": {
+    "ACD": 3,
+    "ACT": 16,
+    "ASG": 160,
+    "BCR": 2,
+    "BSC": 4,
+    "CMV": 75,
+    "CSD": 1,
+    "CURVE": 1,
+    "DEL": 45,
+    "DPC": 4,
+    "DPL": 34,
+    "ENC": 2,
+    "ENS": 4,
+    "INC": 6,
+    "ING": 9,
+    "INS": 23,
+    "LPL": 10,
+    "MV": 115,
+    "SAV": 115,
+    "SEQ": 33,
+    "SPC": 10,
+    "SPG": 4,
+    "SPS": 7,
+    "STG": 2,
+    "WYE": 50
+  },
+  "do_types": 735,
+  "examples": [
+    {
+      "cdc": "SPS",
+      "count": 7,
+      "id": "CN_SPS_GZK",
+      "line": 1156307,
+      "instances": [
+        [
+          "C_G1101X",
+          "LD0",
+          "LPHD1",
+          "Proxy",
+          "CK8_LD0_V01_LPHD_GZK"
+        ],
+        [
+          "C_G1101X",
+          "LD0",
+          "DevAlmGGIO1",
+          "Alm1",
+          "CK8_LD0_V01_DevAlmGGIO1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "LD0",
+          "AlmGGIO1",
+          "Alm1",
+          "CK8_LD0_V01_AlmGGIO1_GZK"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": []
+    },
+    {
+      "cdc": "DPS",
+      "count": 0
+    },
+    {
+      "cdc": "INS",
+      "count": 23,
+      "id": "CN_INS_Beh_GZK",
+      "line": 1156518,
+      "instances": [
+        [
+          "C_G1101X",
+          "LD0",
+          "LLN0",
+          "Beh",
+          "CK8_LD0_V01_LLN0_GZK"
+        ],
+        [
+          "C_G1101X",
+          "LD0",
+          "LTSM1",
+          "Beh",
+          "CK8_LD0_V01_LTSM1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "LD0",
+          "SPVT1",
+          "Beh",
+          "CK8_LD0_V01_SPVT1_GZK"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": [
+        "Beh"
+      ]
+    },
+    {
+      "cdc": "ACT",
+      "count": 16,
+      "id": "CN_ACT_GZK",
+      "line": 1156528,
+      "instances": [
+        [
+          "C_M1101X",
+          "PIGO",
+          "CSWI1",
+          "OpOpn",
+          "CK3_PIGO_V01_CSWI1_GZK"
+        ],
+        [
+          "C_M1101X",
+          "PIGO",
+          "CSWI1",
+          "OpCls",
+          "CK3_PIGO_V01_CSWI1_GZK"
+        ],
+        [
+          "C_M1101X",
+          "PIGO",
+          "CSWI2",
+          "OpOpn",
+          "CK3_PIGO_V01_CSWI1_GZK"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": []
+    },
+    {
+      "cdc": "ACD",
+      "count": 3,
+      "id": "CN_ACD_3P",
+      "line": 1156767,
+      "instances": [
+        [
+          "SPV1101X",
+          "PROT",
+          "eveGAPC2",
+          "Str",
+          "SF_CSD_V1.00_GAPC_2"
+        ],
+        [
+          "SPV1101X",
+          "PROT",
+          "evePVOC3",
+          "Str",
+          "SF_CSD_V1.00_PVOC_1"
+        ],
+        [
+          "SPV1101X",
+          "PROT",
+          "evePVOC4",
+          "Str",
+          "SF_CSD_V1.00_PVOC_1"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": [
+        "dir"
+      ]
+    },
+    {
+      "cdc": "SEC",
+      "count": 0
+    },
+    {
+      "cdc": "BCR",
+      "count": 2,
+      "id": "ZSD_BCR",
+      "line": 1164303,
+      "instances": [],
+      "parents": [],
+      "nested_type_ids": [
+        "ZSD_units",
+        "JWTP_SIUnit",
+        "multiplier"
+      ]
+    },
+    {
+      "cdc": "MV",
+      "count": 115,
+      "id": "CN_MV_GZK",
+      "line": 1156332,
+      "instances": [
+        [
+          "C_G1101X",
+          "LD0",
+          "SPVT1",
+          "Vol1",
+          "CK8_LD0_V01_SPVT1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "LD0",
+          "SPVT1",
+          "Vol2",
+          "CK8_LD0_V01_SPVT1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "LD0",
+          "SPVT1",
+          "Vol3",
+          "CK8_LD0_V01_SPVT1_GZK"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": [
+        "CN_AnalogueValue",
+        "CN_units",
+        "SIUnit",
+        "multiplier",
+        "CN_ScaledValueConfig",
+        "CN_RangeConfig"
+      ]
+    },
+    {
+      "cdc": "CMV",
+      "count": 75,
+      "id": "SPV1101X_CN_CMV",
+      "line": 1156817,
+      "instances": [
+        [
+          "SPV1101X",
+          "PROT",
+          "meaMMXN12",
+          "Imp",
+          "SF_CSD_V1.00_MMXN_1"
+        ],
+        [
+          "SPV1101X",
+          "PROT",
+          "meaMMXN13",
+          "Imp",
+          "SF_CSD_V1.00_MMXN_1"
+        ],
+        [
+          "SPV1101X",
+          "PROT",
+          "meaMMXN17",
+          "Imp",
+          "SF_CSD_V1.00_MMXN_1"
+        ]
+      ],
+      "parents": [
+        [
+          "CN_WYE",
+          "phsA"
+        ],
+        [
+          "CN_WYE",
+          "phsB"
+        ],
+        [
+          "CN_WYE",
+          "phsC"
+        ],
+        [
+          "SPV1101X_CN_WYE_ALL",
+          "phsA"
+        ],
+        [
+          "SPV1101X_CN_WYE_ALL",
+          "phsB"
+        ],
+        [
+          "SPV1101X_CN_WYE_ALL",
+          "phsC"
+        ]
+      ],
+      "nested_type_ids": [
+        "CN_Vector",
+        "CN_AnalogueValue",
+        "SPV1101X_CN_units",
+        "SPV1101X_SIUnit",
+        "multiplier",
+        "CN_RangeConfig",
+        "CN_ScaledValueConfig",
+        "angidCMV"
+      ]
+    },
+    {
+      "cdc": "SAV",
+      "count": 115,
+      "id": "CN_SAV_GZK",
+      "line": 1156451,
+      "instances": [
+        [
+          "C_G1101X",
+          "MEAS",
+          "TVTR1",
+          "Vol",
+          "CK8_MEAS_V01_TVTR1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "MEAS",
+          "TVTR2",
+          "Vol",
+          "CK8_MEAS_V01_TVTR1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "MEAS",
+          "TCTR1",
+          "Amp",
+          "CK8_MEAS_V01_TCTR1_GZK"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": [
+        "CN_AnalogueValue_I",
+        "CN_units",
+        "SIUnit",
+        "multiplier",
+        "CN_ScaledValueConfig"
+      ]
+    },
+    {
+      "cdc": "WYE",
+      "count": 50,
+      "id": "CN_WYE_ALL_GZK",
+      "line": 1156369,
+      "instances": [
+        [
+          "C_G1101X",
+          "MEAS",
+          "CBMMXU1",
+          "PhV",
+          "CK8_MEAS_V01_CBMMXU1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "MEAS",
+          "CBMMXU1",
+          "A",
+          "CK8_MEAS_V01_CBMMXU1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "MEAS",
+          "CBMMXU2",
+          "PhV",
+          "CK8_MEAS_V01_CBMMXU1_GZK"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": [
+        "CN_CMV_GZK",
+        "CN_Vector",
+        "CN_AnalogueValue",
+        "CN_units",
+        "SIUnit",
+        "multiplier",
+        "CN_RangeConfig",
+        "CN_ScaledValueConfig",
+        "angidCMV",
+        "angid"
+      ]
+    },
+    {
+      "cdc": "DEL",
+      "count": 45,
+      "id": "CN_DEL_GZK",
+      "line": 1156399,
+      "instances": [
+        [
+          "C_G1101X",
+          "MEAS",
+          "CBMMXU1",
+          "PPV",
+          "CK8_MEAS_V01_CBMMXU1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "MEAS",
+          "CBMMXU2",
+          "PPV",
+          "CK8_MEAS_V01_CBMMXU1_GZK"
+        ],
+        [
+          "C_G1102X",
+          "MEAS",
+          "CBMMXU1",
+          "PPV",
+          "CK8_MEAS_V01_CBMMXU1_GZK"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": [
+        "CN_CMV_GZK",
+        "CN_Vector",
+        "CN_AnalogueValue",
+        "CN_units",
+        "SIUnit",
+        "multiplier",
+        "CN_RangeConfig",
+        "CN_ScaledValueConfig",
+        "angidCMV",
+        "angid"
+      ]
+    },
+    {
+      "cdc": "SEQ",
+      "count": 33,
+      "id": "CN_SEQ",
+      "line": 1158162,
+      "instances": [
+        [
+          "PCL1001X",
+          "PROT",
+          "MSQI1",
+          "SeqA",
+          "DFE_MSQI_EPS31_V10"
+        ],
+        [
+          "PCL1001X",
+          "PROT",
+          "MSQI1",
+          "SeqV",
+          "DFE_MSQI_EPS31_V10"
+        ],
+        [
+          "PCL1001X",
+          "PROT",
+          "MSQI1",
+          "DQ0Seq",
+          "DFE_MSQI_EPS31_V10"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": [
+        "PCL1001X_CN_CMV",
+        "CN_Vector",
+        "CN_AnalogueValue",
+        "PCL1001X_CN_units",
+        "PCL1001X_SIUnit",
+        "multiplier",
+        "CN_RangeConfig",
+        "CN_ScaledValueConfig",
+        "angidCMV",
+        "seqT"
+      ]
+    },
+    {
+      "cdc": "HMV",
+      "count": 0
+    },
+    {
+      "cdc": "HWYE",
+      "count": 0
+    },
+    {
+      "cdc": "HDEL",
+      "count": 0
+    },
+    {
+      "cdc": "SPC",
+      "count": 10,
+      "id": "CN_SPC_GZK",
+      "line": 1156254,
+      "instances": [
+        [
+          "C_G1101X",
+          "CTRL",
+          "GAPC1",
+          "SPCSO",
+          "CK8_CTRL_V01_GAPC1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "CTRL",
+          "GAPC2",
+          "SPCSO",
+          "CK8_CTRL_V01_GAPC1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "CTRL",
+          "GAPC3",
+          "SPCSO",
+          "CK8_CTRL_V01_GAPC1_GZK"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": [
+        "CN_SBOw_Oper_SDPC",
+        "CN_Originator",
+        "orCategory",
+        "CN_Cancel_SDPC",
+        "CN_PulseConfig",
+        "PulseConfigCmdQual",
+        "ctlModel",
+        "sboClass"
+      ]
+    },
+    {
+      "cdc": "DPC",
+      "count": 4,
+      "id": "CN_DPC_GZK",
+      "line": 1156534,
+      "instances": [
+        [
+          "C_M1101X",
+          "CTRL",
+          "CSWI1",
+          "Pos",
+          "CK3_CTRL_V01_CSWI1_GZK"
+        ],
+        [
+          "C_M1101X",
+          "CTRL",
+          "CSWI2",
+          "Pos",
+          "CK3_CTRL_V01_CSWI1_GZK"
+        ],
+        [
+          "C_M1101X",
+          "CTRL",
+          "CSWI3",
+          "Pos",
+          "CK3_CTRL_V01_CSWI1_GZK"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": [
+        "CN_SBOw_Oper_SDPC",
+        "CN_Originator",
+        "orCategory",
+        "CN_Cancel_SDPC",
+        "CN_PulseConfig",
+        "PulseConfigCmdQual",
+        "ctlModel",
+        "sboClass"
+      ]
+    },
+    {
+      "cdc": "INC",
+      "count": 6,
+      "id": "CN_INC_Mod_GZK",
+      "line": 1156510,
+      "instances": [
+        [
+          "C_G1101X",
+          "LD0",
+          "LLN0",
+          "Mod",
+          "CK8_LD0_V01_LLN0_GZK"
+        ],
+        [
+          "C_G1101X",
+          "LD0",
+          "LTSM1",
+          "Mod",
+          "CK8_LD0_V01_LTSM1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "LD0",
+          "SPVT1",
+          "Mod",
+          "CK8_LD0_V01_SPVT1_GZK"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": [
+        "Mod",
+        "ctlModel"
+      ]
+    },
+    {
+      "cdc": "BSC",
+      "count": 4,
+      "id": "CN_BSC_GZK_EX",
+      "line": 1157189,
+      "instances": [
+        [
+          "C_L1101X",
+          "CTRL",
+          "ATCC1",
+          "TapChgA",
+          "CK1_CTRL_V01_ATCC1_GZK"
+        ],
+        [
+          "C_L1101X",
+          "CTRL",
+          "ATCC1",
+          "TapChgB",
+          "CK1_CTRL_V01_ATCC1_GZK"
+        ],
+        [
+          "C_L1101X",
+          "CTRL",
+          "ATCC1",
+          "TapChgC",
+          "CK1_CTRL_V01_ATCC1_GZK"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": [
+        "CN_SBOw_Oper_BSC",
+        "CN_Originator",
+        "orCategory",
+        "CN_Cancel_BSC",
+        "CN_ValWithTrans",
+        "ctlModel",
+        "sboClass"
+      ]
+    },
+    {
+      "cdc": "ISC",
+      "count": 0
+    },
+    {
+      "cdc": "APC",
+      "count": 0
+    },
+    {
+      "cdc": "SPG",
+      "count": 4,
+      "id": "CN_SPG_SG_EX",
+      "line": 1156713,
+      "instances": [
+        [
+          "PCK1101X",
+          "PROT",
+          "PTRC1",
+          "Z2BlkRec",
+          "DFE_PTRC_EPS31_V10"
+        ],
+        [
+          "PCK1101X",
+          "PROT",
+          "PTRC1",
+          "MPBlkRec",
+          "DFE_PTRC_EPS31_V10"
+        ],
+        [
+          "PCK1101X",
+          "PROT",
+          "PTRC1",
+          "Z3BlkRec",
+          "DFE_PTRC_EPS31_V10"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": []
+    },
+    {
+      "cdc": "ING",
+      "count": 9,
+      "id": "CN_ING_SG",
+      "line": 1156600,
+      "instances": [
+        [
+          "PCK1101X",
+          "PROT",
+          "ChaPTOC1",
+          "OpDlTmms",
+          "DFE_PTOC_EPS31_V10"
+        ],
+        [
+          "PCK1101X",
+          "PROT",
+          "ChaPTOC2",
+          "OpDlTmms",
+          "DFE_PTOC_EPS31_V10"
+        ],
+        [
+          "PCK1101X",
+          "PROT",
+          "ChaPTOC3",
+          "OpDlTmms",
+          "DFE_PTOC_EPS31_V10"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": []
+    },
+    {
+      "cdc": "ASG",
+      "count": 160,
+      "id": "CN_ASG_SP_GZK_EX",
+      "line": 1156416,
+      "instances": [
+        [
+          "C_G1101X",
+          "MEAS",
+          "TVTR1",
+          "VRtgSnd",
+          "CK8_MEAS_V01_TVTR1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "MEAS",
+          "TVTR2",
+          "VRtgSnd",
+          "CK8_MEAS_V01_TVTR1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "MEAS",
+          "TCTR1",
+          "ARtgSnd",
+          "CK8_MEAS_V01_TCTR1_GZK"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": [
+        "CN_AnalogueValue",
+        "CN_units",
+        "SIUnit",
+        "multiplier",
+        "CN_ScaledValueConfig"
+      ]
+    },
+    {
+      "cdc": "CURVE",
+      "count": 1,
+      "id": "ECON_CURVE_SG",
+      "line": 1164561,
+      "instances": [],
+      "parents": [],
+      "nested_type_ids": []
+    },
+    {
+      "cdc": "DPL",
+      "count": 34,
+      "id": "CN_DPL_GZK",
+      "line": 1156461,
+      "instances": [
+        [
+          "C_G1101X",
+          "LD0",
+          "LPHD1",
+          "PhyNam",
+          "CK8_LD0_V01_LPHD_GZK"
+        ],
+        [
+          "C_G1101X",
+          "MEAS",
+          "LPHD1",
+          "PhyNam",
+          "CK8_V01_LPHD_GZK"
+        ],
+        [
+          "C_G1101X",
+          "CTRL",
+          "LPHD1",
+          "PhyNam",
+          "CK8_V01_LPHD_GZK"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": []
+    },
+    {
+      "cdc": "LPL",
+      "count": 10,
+      "id": "CN_LPL_GZK_EX",
+      "line": 1156407,
+      "instances": [
+        [
+          "C_G1101X",
+          "LD0",
+          "DevAlmGGIO1",
+          "NamPlt",
+          "CK8_LD0_V01_DevAlmGGIO1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "LD0",
+          "AlmGGIO1",
+          "NamPlt",
+          "CK8_LD0_V01_AlmGGIO1_GZK"
+        ],
+        [
+          "C_G1101X",
+          "MEAS",
+          "CBMMXU1",
+          "NamPlt",
+          "CK8_MEAS_V01_CBMMXU1_GZK"
+        ]
+      ],
+      "parents": [],
+      "nested_type_ids": []
+    },
+    {
+      "cdc": "CSD",
+      "count": 1,
+      "id": "CN_CSD",
+      "line": 1164445,
+      "instances": [],
+      "parents": [],
+      "nested_type_ids": [
+        "ECON_Point_0",
+        "CN_Unit",
+        "ZGXH_SIUnit",
+        "multiplier"
+      ]
+    }
+  ],
+  "baseline_cdc_count": 29,
+  "table49_unique_names": 116,
+  "unit_rows": 58,
+  "multiplier_prefixes": 20,
+  "fc_rows": 18
+}

@@ -17,7 +17,7 @@
 
 - 标准文库：概论（体系、Bay、ACSI、IF1～IF10 与建模方法）、第 2 部分术语导读（FC/FCD/FCDA、GOOSE 与 SCD 缩写）、第 6 部分 SCL 与 IED 通信配置描述（结构、引用、变电站描述、控制模型与 CDC 属性）、缩写/全拼/中文名/功能索引表、标准模型索引、SCL 与工程交换文件。
 - 技术知识：间隔、设备缩写与自动化层级，保护 IED 类型、部署与命名，概念对照、一次系统与设备角色、安全与测试边界。
-- 数据模型：IED 与数据模型、LN / CDC 深度索引。
+- 数据模型：IED 与数据模型、LN / CDC 深度索引，以及第 7-3 部分的公用属性类型、五组 CDC、完整属性字典和单位/FC 查表页。
 - SCL 配置：SCD 十分钟导览、阅读工具箱、注释式 XML 示例。
 - 通信协议：通信与过程层、协议字段阅读（仅提供静态知识材料）。
 - 工程应用：工程实践与排障、现象到排障路径库。
@@ -74,3 +74,22 @@
 维护入口：从项目根目录执行 `python scripts/build_part72.py` 可重建新增 7 页、工程证据及术语增补文件；首页、导航、旧专题接入与 README 单独维护。`python scripts/check_offline.py` 检查正式 HTML 的本地文件/锚点、重复 ID、外部资源依赖，新增 SVG/XML 的语法结构、术语链接及 21 项缩略语；JavaScript 语法检查需要脚本内指定的本地 Node 路径。
 
 验证记录：2026-10-03 上述静态检查通过，共 38 个正式 HTML 页。自动化浏览器的安全策略拒绝打开 `file://`，因此本轮没有浏览器显示、窄屏交互或真实离线打开验证。XML 片段通过语法解析，不表示参考 SCD 通过完整 XSD、设备功能或现场试验。内容是原创知识总结，不替代标准全文；各类“全部”限定于明示版本与观测集合。
+
+## 第 7-3 部分补充（2026-10-13）
+
+新增 10 页，136 张表、10 幅原创 SVG，以及 110 个可解析 XML 摘录。主入口、知识树、章节关联、缩略语页与首页搜索已同步。
+
+- 标准文库：[第 7-3 部分：公用数据类 CDC](chapters/standard-part-7-3.html)。说明标准分工、类型层级、命名空间、20 个存在条件代码与覆盖清单。
+- 数据模型：[公用数据属性类型](chapters/cdc-common-types.html)。覆盖 Quality 全部字段及有效性关系、模拟值/换算、范围、步位置、脉冲、原发者、单位、Vector/Point、五种控制模式与两种 SBO 类别。
+- 数据模型：[状态信息](chapters/cdc-status.html)、[测量信息](chapters/cdc-measurement.html)、[可控信息](chapters/cdc-control.html)、[定值信息](chapters/cdc-setting.html)、[描述信息](chapters/cdc-description.html)。覆盖所给版次 29 种 CDC 的属性类型、FC、触发、值域、存在条件、模板继承服务与使用边界；另有死区、冻结、谱窗口、定值组和曲线示例。
+- 数据模型：[表 49 完整属性字典](chapters/cdc-attribute-dictionary.html)。116 个不同属性名各有稳定锚点，同名多语境分别解释，并提供 CDC/类型/FC 反向链接及品质、时间、单位和取代作用对象表。
+- 数据模型：[附录 A/B](chapters/cdc-units-fc.html)。A 的 58 个单位表行和 20 个倍率前缀，B 的 18 个 FC 表项（含 XX 服务通配）。需求中附录 B 描述重复写成 A，按两份实际附录分别总结。
+- SCL 配置：[参考 SCD 的 CDC 证据](chapters/cdc-scd-evidence.html)。保留指定工程的真实名称，列源行、DO/SDO 引用、DA/DAType/EnumType 链与原始片段。735 个 DOType 包含 25 种 CDC 字符串，其中 22 种属于该早期版，另外有 ENS/ENC/STG；缺失的 7 类明确列出，不借其他类同名字段充当证据。
+
+来源：`D:/IEC61850资料/IEC61850标准[中文.完整版]/860[1].7-3.pdf`，共 57 页，封面为 DL/T 860.73—2004 / IEC 61850-7-3:2003。PDF 页从 1 起，印刷正文页=PDF 页−4。扫描内容经关键表格视觉核对，发布内容是原创解读与结构化总结。原版 APC 与 TISSUE 28 修订、CMV.subCVal 类型、控制类 subVal FC、LPL 命名空间条件、CSD 表格空格/误字、谱公式和大小写差异均分别说明；不静默改写为新版规范。附录表序号不是单位全局枚举编码，参考工程的枚举 ord/文本另沿 EnumType 查询。
+
+参考 SCD 未修改；[part73-evidence.json](data/part73-evidence.json) 保存 SHA-256、根版本、完整 CDC 统计、逐类模板位置与引用实例。工程配置声明不证明设备运行值、服务支持或现场功能。旧章节中的泛化命名空间 FC 与条件代码解释同步修订；既有术语 ID 保留并更新，新旧重复入口合并后全库为 485 个词条，M/O/C、FC、控制枚举、属性名均可搜索。
+
+维护：`python scripts/build_part73.py` 重建 10 页、工程证据与术语增补；`python scripts/integrate_part73.py` 幂等接入导航、首页、旧章节和缩略语页。`scripts/part73_data.py` 保存经核对的 CDC/属性字典。README 单独维护。`python scripts/check_offline.py` 检查正式 HTML 的链接/锚点/重复 ID、资源依赖、SVG/XML 语法、JavaScript 语法、术语链接与覆盖计数；Node 路径按当前用户的 bundled runtime 解析。
+
+验证记录：2026-10-13，全库 48 个正式 HTML 页静态检查通过；新增页的 29 CDC、116 属性、58 单位、20 前缀、18 FC 覆盖检查通过。使用本机 Edge 的 Playwright 在离线模式下直接读取 `file://`，检查全部新增页的 1440 px / 390 px 布局、面包屑与目录、窄屏导航及 7 项术语搜索/属性锚点跳转；20 次页面检查没有脚本错误、整页横向溢出或远程资源请求，并视觉检查桌面/窄屏截图。复现脚本为 `scripts/preview_part73.cjs`，使用 bundled Playwright 与已安装的 Edge；输出暂存在项目 `tmp/part73`，不作为发布资源。XML 语法检查不代表完整 XSD 或设备校验。
