@@ -1,0 +1,72 @@
+[
+  [
+    "standard-part-7-4",
+    "第 7-4 部分：兼容逻辑节点类和数据类",
+    "标准文库"
+  ],
+  [
+    "ln-system",
+    "公用逻辑节点信息：组成、继承与状态",
+    "数据模型"
+  ],
+  [
+    "ln-protection",
+    "保护功能逻辑节点：P 组全表",
+    "数据模型"
+  ],
+  [
+    "ln-protection-related",
+    "保护相关逻辑节点：R 组全表",
+    "数据模型"
+  ],
+  [
+    "ln-control-generic",
+    "控制、通用功能与接口：C / G / I 组",
+    "数据模型"
+  ],
+  [
+    "ln-automatic",
+    "自动控制逻辑节点：A 组",
+    "数据模型"
+  ],
+  [
+    "ln-measurement",
+    "测量、计量与电气基础：M 组",
+    "数据模型"
+  ],
+  [
+    "ln-switch-transformer",
+    "开关、互感器与变压器：X / T / Y 组",
+    "数据模型"
+  ],
+  [
+    "ln-monitoring-equipment",
+    "传感器监视与其他电力设备：S / Z 组",
+    "数据模型"
+  ],
+  [
+    "ln-values-reference",
+    "7-4 数据取值：枚举、模式组合与量纲",
+    "数据模型"
+  ],
+  [
+    "ln-data-dictionary",
+    "第 6 章：519 个数据名称与反向索引",
+    "数据模型"
+  ],
+  [
+    "ln-abbreviations",
+    "第 4 章：缩写、英文、中文与用法",
+    "标准文库"
+  ],
+  [
+    "ln-extension-modeling",
+    "附录 A/B/C：扩展规则与功能建模",
+    "数据模型"
+  ],
+  [
+    "ln-scd-evidence",
+    "参考 SCD：逻辑节点实例、类型链与枚举",
+    "SCL 配置"
+  ]
+]

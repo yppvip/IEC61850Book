@@ -1,0 +1,10 @@
+.part74-filter { display: block; margin: 1rem 0; font-weight: 600; }
+.part74-filter input { display: block; width: min(100%, 36rem); padding: .8rem; margin-top: .5rem; border: 1px solid #b8c8d0; border-radius: 8px; font: inherit; background: #fff; color: #172f3f; }
+.part74-filter input:focus { outline: 3px solid #bedbe3; }
+[data-filter-item][hidden] { display: none; }
+main.chapter details { margin: 1rem 0; padding: .7rem 1rem; border: 1px solid #d5e1e6; border-radius: 8px; }
+main.chapter details > summary { cursor: pointer; font-weight: 600; overflow-wrap: anywhere; }
+main.chapter code { overflow-wrap: anywhere; }
+main.chapter td { overflow-wrap: anywhere; }
+.reference-table tr:target { background: #fff2c2; }
+@media (max-width: 700px) { main.chapter details { padding: .6rem; } .concept-figure::after { content: "图表可横向滚动查看"; display: block; color: #5c7484; font-size: .8rem; margin-top: .4rem; } }

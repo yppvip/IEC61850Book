@@ -93,3 +93,26 @@
 维护：`python scripts/build_part73.py` 重建 10 页、工程证据与术语增补；`python scripts/integrate_part73.py` 幂等接入导航、首页、旧章节和缩略语页。`scripts/part73_data.py` 保存经核对的 CDC/属性字典。README 单独维护。`python scripts/check_offline.py` 检查正式 HTML 的链接/锚点/重复 ID、资源依赖、SVG/XML 语法、JavaScript 语法、术语链接与覆盖计数；Node 路径按当前用户的 bundled runtime 解析。
 
 验证记录：2026-10-13，全库 48 个正式 HTML 页静态检查通过；新增页的 29 CDC、116 属性、58 单位、20 前缀、18 FC 覆盖检查通过。使用本机 Edge 的 Playwright 在离线模式下直接读取 `file://`，检查全部新增页的 1440 px / 390 px 布局、面包屑与目录、窄屏导航及 7 项术语搜索/属性锚点跳转；20 次页面检查没有脚本错误、整页横向溢出或远程资源请求，并视觉检查桌面/窄屏截图。复现脚本为 `scripts/preview_part73.cjs`，使用 bundled Playwright 与已安装的 Edge；输出暂存在项目 `tmp/part73`，不作为发布资源。XML 语法检查不代表完整 XSD 或设备校验。
+
+## 第 7-4 部分补充（2026-10-14）
+
+新增 14 页、293 张表、19 幅原创 SVG、180 个可解析 XML 片段。标准文库首页、知识树、旧专题、共用缩略语页和术语搜索已接入。
+
+- 标准文库：[第 7-4 部分：兼容逻辑节点类和数据类](chapters/standard-part-7-4.html)、[第 4 章缩写全表](chapters/ln-abbreviations.html)。
+- 数据模型：[公用信息与继承](chapters/ln-system.html)、[保护 P 组](chapters/ln-protection.html)、[保护相关 R 组](chapters/ln-protection-related.html)。
+- 数据模型：[控制、通用功能与接口 C/G/I 组](chapters/ln-control-generic.html)、[自动控制 A 组](chapters/ln-automatic.html)、[测量与计量 M 组](chapters/ln-measurement.html)。
+- 数据模型：[开关、互感器与变压器 X/T/Y 组](chapters/ln-switch-transformer.html)、[监视与其他电力设备 S/Z 组](chapters/ln-monitoring-equipment.html)。
+- 数据模型：[第 6 章数据名称字典](chapters/ln-data-dictionary.html)、[取值、模式组合与量纲](chapters/ln-values-reference.html)、[附录 A/B/C：扩展与建模](chapters/ln-extension-modeling.html)。
+- SCL 配置：[参考 SCD：实例、类型链与工程枚举](chapters/ln-scd-evidence.html)。
+
+覆盖本版 13 个 LN 组的 91 个具体类，公用信息模板另列，不能当作 `lnClass=COMMON`。节点表整理 909 行（含两行 COMTRADE 格式访问说明，后者不是 DO），公共必备继承集中表达；区分公用信息、状态、定值、测量、控制、计量及 M/O/C/T。表 3 的 40 项历史保护功能对照和表 4～8 的功能拆分均有摘要。第 6 章表 9 的 519 个数据名称有稳定锚点、语义、节点反向引用、取值/CDC 关联；第 4 章的 273 个缩写入口包含 Tm 下四种时间后缀。另列 26 组明示编码表、五种 Mod 行为、25 种 Mod/Beh 组合、布尔真值关系及单位/数值边界。附录 A.1～A.8、B.1～B.8 和 C 均有解读，功能链、相量与阻抗图为原创。
+
+来源：`E:/IEC61850标准[中文.完整版]/860[1].7-4.pdf`，113 页扫描件，封面 DL/T 860.74—2006 / IEC 61850-7-4:2003。本地识别后按列检查技术名称、CDC、存在标记、重要取值及图表；不直接发布 OCR 原始文本。英文功能名为助读译释，缩写表中明显的英文拼写识别/印刷问题用通行拼写说明，不声称所有 LN 类代码都有逐字符英文全拼。
+
+**扫描完整性边界：PDF 第 72 页重复了印刷第 58 页，印刷第 68 页缺失。ZBAT 的专用表和 ZBSH 的首表不能核对，不声称完整覆盖；ZBSH 续表仍在 PDF 73。** 两类均保留入口、可核对的续表及第 6 章相关定义，不据字典猜补 CDC、M/O 或 T。通常印刷正文页=PDF 页−4，该重复页例外。原表 ISI/INS、PhyName/PhyNam、ChTrg/Chtrg、MmeRs/MemRs、SvcVoil/SvcViol、Pump*/Pmp*、GnSpd/GnSp、Even/Evn、NormA/NomA，以及窗口公式/时间单位和 PresTr 解释差异，均分别说明，不静默替换成新版。
+
+参考工程仍为 `../source/南雷变2026041614.scd`，按本次授权保留真实对象、类型 ID、desc 和源行。读取 82 个 IED、7229 个 LN/LN0 实例、32 个 `lnClass` 字符串；987 个 LNodeType、735 个 DOType、107 个 DAType、115 个 EnumType。观察到本版 26 类，其余 65 类未出现；PDIS、MMTR 不借其他节点充当工程证据。6 个超出本版的工程类仅列实际声明。每个实际类选择实例和完整 LNodeType，代表性 DO 沿 SDO/DAType/EnumType 追踪；115 个工程枚举按全部编码/标签序列归并为 27 组，保留全部编码与 DA/BDA 使用点。统计、源文件 SHA-256 和摘录保存于 [part74-evidence.json](data/part74-evidence.json)，源 SCD 未修改。声明不证明实际业务绑定、设备运行值、XSD 完整符合或现场功能。
+
+维护：`python scripts/build_part74.py` 从已核对的 `scripts/part74_data.json` 与源 SCD 重建 14 页、术语和工程证据；`python scripts/integrate_part74.py` 幂等接入导航、首页、旧专题及共用缩写页。目录、字段、名称、取值、历史对照和复核简述分别由 `part74_catalog.py`、`part74_fields.py`、`part74_dictionary_names.py`、`part74_values.py`、`part74_mappings.py`、`part74_summaries.py` 维护。扫描识别辅助脚本保留供核对，正常网页重建不运行 OCR；识别结果与训练模型在 `tmp/part74-ocr`，不作为发布资源。README 单独维护。
+
+验证记录：2026-10-14，`scripts/check_offline.py` 检查全库 62 个正式 HTML 页的本地资源、链接、锚点、重复 ID、SVG/XML 和 JavaScript，并检查 91 类、519 个名称、273 个缩写入口；均通过。全库术语共 1382 项，原稳定 ID 保留。`scripts/preview_part74.cjs` 使用 bundled Playwright / 本机 Edge，在离线模式下直接打开 `file://`，检查全部新页的 1440 px / 390 px 布局，共 28 次页面检查；没有脚本错误、整页横向溢出、SVG 文字越界或远程资源请求。字典/缩写筛选、窄屏导航、XML 展开及 9 项术语搜索/字典跳转均通过，并视觉检查桌面/窄屏与关键图表。浏览器检查记录位于项目临时目录 `tmp/part74-preview`，不作为网页依赖。

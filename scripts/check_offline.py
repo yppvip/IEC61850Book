@@ -31,6 +31,8 @@ for path,page in pages.items():
 new=['standard-part-7-2','acsi-abstraction','acsi-common-types','acsi-server-associations','acsi-runtime-models','scd-acsi-evidence','acsi-engineering-workflows']
 part73=['standard-part-7-3','cdc-common-types','cdc-status','cdc-measurement','cdc-control','cdc-setting','cdc-description','cdc-attribute-dictionary','cdc-units-fc','cdc-scd-evidence']
 new+=part73
+part74=[p[0] for p in json.loads((OUT/'data/part74-pages.json').read_text(encoding='utf-8'))] if (OUT/'data/part74-pages.json').exists() else []
+new+=part74
 svg_count=xml_count=table_count=0
 for stem in new:
  path=OUT/'chapters'/f'{stem}.html';text=texts[path];table_count+=pages[path].tables
@@ -48,7 +50,7 @@ for stem in new:
   try:ET.fromstring(html.unescape(raw));xml_count+=1
   except ET.ParseError as exc:errors.append(f'{stem}: XML example {exc}')
 node=Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe'
-js="global.window={};require('./outputs/data/terms.js');require('./outputs/data/part72-terms.js');require('./outputs/data/part73-terms.js');process.stdout.write(JSON.stringify(window.IEC61850_TERMS));"
+js="global.window={};require('./outputs/data/terms.js');require('./outputs/data/part72-terms.js');require('./outputs/data/part73-terms.js');"+("require('./outputs/data/part74-terms.js');" if part74 else '')+"process.stdout.write(JSON.stringify(window.IEC61850_TERMS));"
 terms=json.loads(subprocess.check_output([str(node),'-e',js],cwd=ROOT))
 ids=[t['id'] for t in terms]
 if len(ids)!=len(set(ids)):errors.append('duplicate term IDs')
@@ -64,7 +66,7 @@ for t in terms:
  if t['id'].startswith(('acsi72-','part72-','part73-','cdc-','da-','fc-','presence-')):
   for rel in t.get('related',[]):
    if rel not in ids:errors.append(f"{t['id']}: missing related {rel}")
-for f in [OUT/'assets/navigation.js',OUT/'assets/home.js',OUT/'data/part72-terms.js',OUT/'data/part73-terms.js']:
+for f in [OUT/'assets/navigation.js',OUT/'assets/home.js',OUT/'data/part72-terms.js',OUT/'data/part73-terms.js']+([OUT/'assets/part74.js',OUT/'data/part74-terms.js'] if part74 else []):
  subprocess.run([str(node),'--check',str(f)],check=True)
 evidence=json.loads((OUT/'data/part72-evidence.json').read_text(encoding='utf-8'))
 from part73_data import CDC,DICTIONARY,CONDITIONS
@@ -88,5 +90,24 @@ for f in ['assets/navigation.js','assets/home.js']:
  for filename in re.findall(r"(?:chapters/)?([a-z][a-z0-9-]+\.html)",t):
   if not (OUT/'chapters'/filename).exists() and not (OUT/filename).exists():errors.append('missing navigation '+filename)
 part73_stats={'pages':len(part73),'tables':sum(pages[OUT/'chapters'/(n+'.html')].tables for n in part73),'svg':sum(len(re.findall(r'<svg\b',texts[OUT/'chapters'/(n+'.html')])) for n in part73),'xml_examples':sum(len(re.findall(r'<pre data-language="xml">',texts[OUT/'chapters'/(n+'.html')])) for n in part73)}
-print(json.dumps({'html_pages':len(pages),'checked_supplement_pages':len(new),'tables':table_count,'svg':svg_count,'parseable_xml_examples':xml_count,'part73':part73_stats,'terms':len(terms),'required_abbreviations':len(required),'errors':errors},ensure_ascii=False,indent=2))
+part74_stats={}
+if part74:
+ d=json.loads((ROOT/'scripts/part74_data.json').read_text(encoding='utf-8'));ev=json.loads((OUT/'data/part74-evidence.json').read_text(encoding='utf-8'))
+ if len(part74)!=14 or len(set(part74))!=14:errors.append('7-4 page manifest must contain 14 unique pages')
+ if len(d['dictionary'])!=519 or len(d['abbreviations'])!=273 or len(d['classes'])!=92:errors.append('7-4 reference coverage count')
+ if any(not x['summary'] for x in d['dictionary']):errors.append('7-4 empty data summary')
+ if any(not a['en'] or not a['zh'] for a in d['abbreviations']):errors.append('7-4 empty abbreviation definition')
+ for c in d['classes']:
+  if not any(c['name'] in pages[OUT/'chapters'/(f+'.html')].ids for f in part74):errors.append('7-4 missing class '+c['name'])
+ for row in d['dictionary']:
+  if 'data-'+row['name'] not in pages[OUT/'chapters/ln-data-dictionary.html'].ids:errors.append('7-4 missing data '+row['name'])
+ for a in d['abbreviations']:
+  if 'abbr-'+a['name'].replace('/','-') not in pages[OUT/'chapters/ln-abbreviations.html'].ids:errors.append('7-4 missing abbreviation '+a['name'])
+ if 'PDIS' not in ev['baseline_absent'] or 'MMTR' not in ev['baseline_absent']:errors.append('7-4 SCD absence boundary')
+ for t in terms:
+  if t['id'].startswith('part74-'):
+   for r in t.get('related',[]):
+    if r not in ids:errors.append('7-4 missing related '+r)
+ part74_stats={'pages':len(part74),'tables':sum(pages[OUT/'chapters'/(n+'.html')].tables for n in part74),'svg':sum(len(re.findall(r'<svg\b',texts[OUT/'chapters'/(n+'.html')])) for n in part74),'xml_examples':sum(len(re.findall(r'<pre data-language="xml">',texts[OUT/'chapters'/(n+'.html')])) for n in part74),'classes':91,'dictionary':519,'abbreviations':273}
+print(json.dumps({'html_pages':len(pages),'checked_supplement_pages':len(new),'tables':table_count,'svg':svg_count,'parseable_xml_examples':xml_count,'part73':part73_stats,'part74':part74_stats,'terms':len(terms),'required_abbreviations':len(required),'errors':errors},ensure_ascii=False,indent=2))
 raise SystemExit(bool(errors))

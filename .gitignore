@@ -1,0 +1,5 @@
+# Temporary files created while checking the 7-4 scan and offline pages.
+/tmp/part74-ocr/
+/tmp/part74-assessment/
+/tmp/part74-preview/
+/scripts/__pycache__/
