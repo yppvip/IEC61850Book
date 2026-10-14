@@ -1,0 +1,37 @@
+[
+  [
+    "learning-path",
+    "从编程到电气：零基础学习路线",
+    "技术知识"
+  ],
+  [
+    "electrical-fundamentals",
+    "电气基础：从电路到三相功率",
+    "技术知识"
+  ],
+  [
+    "primary-diagrams",
+    "一次接线：从单线图认识设备与拓扑",
+    "技术知识"
+  ],
+  [
+    "measurement-chain",
+    "测量链：互感器、采样、品质与时间",
+    "技术知识"
+  ],
+  [
+    "protection-control-fundamentals",
+    "保护与控制：从故障到跳闸闭环",
+    "技术知识"
+  ],
+  [
+    "developer-data-contracts",
+    "给开发人员的数据契约与工程边界",
+    "工程应用"
+  ],
+  [
+    "feeder-learning-case",
+    "综合练习：从一条馈线读到工程证据",
+    "工程应用"
+  ]
+]

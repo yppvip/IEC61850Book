@@ -84,7 +84,30 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,su
 .reference-table table{min-width:580px;table-layout:auto;overflow-wrap:anywhere}
 .reference-table th{white-space:normal}
 .chapter pre{max-width:100%;overflow-x:auto;background:#f3f7fb;border:1px solid #dce6ef;border-radius:8px;padding:14px;line-height:1.6}
+/* Relationship maps use a light panel: set the foreground with the same specificity. */
+.chapter pre.map{background:#edf5fc;color:#173b57;border-color:#b9d3e6;box-shadow:none;font:15px/1.8 Consolas,"Microsoft YaHei",monospace}
 .vertical-diagram svg{min-width:580px;width:100%}
 .page-outline,.side-tree{max-height:calc(100vh - var(--nav-height,100px) - 48px);overflow-y:auto}
 .term-reading{display:inline-block;margin-top:8px}
 @media(max-width:760px){.reference-table table{display:table;min-width:580px}.vertical-diagram{padding:8px}.vertical-diagram svg{min-width:580px}.home-page .page-outline{display:none}}
+
+/* SVG shape groups used to pass their stroke onto labels, making text appear doubled. */
+.chapter svg text,.diagram-dialog svg text{stroke:none;stroke-width:0;paint-order:normal;text-shadow:none}
+.chapter code{overflow-wrap:anywhere}
+.chapter .concept-figure svg{min-width:840px}
+.interface-figure .svg-text,.interface-dialog .svg-text{font-size:16px}
+.interface-figure .svg-badge,.interface-dialog .svg-badge{font-size:14px}
+.chapter .learning-figure svg{min-width:620px;max-width:760px;margin:auto}
+.primary-wire{fill:none;stroke:#204d6c;stroke-width:2.5}
+.diagram-open{display:block;margin:0 0 10px auto;border:1px solid #9abbd1;border-radius:6px;padding:5px 12px;background:#fff;color:#075a97;font:inherit;font-size:13px;cursor:pointer}
+.diagram-dialog{width:96vw;max-width:1600px;max-height:94vh;border:1px solid #8eafc6;border-radius:12px;padding:16px;color:var(--ink);background:#fbfdff;box-shadow:var(--shadow)}
+.diagram-dialog::backdrop{background:#10283bb3}
+.diagram-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.diagram-toolbar button{padding:7px 13px;border:1px solid #89abc3;border-radius:6px;background:white;color:#075a97;font:inherit;cursor:pointer}
+.diagram-toolbar span,.diagram-dialog>p{font-size:13px;color:#45657e}
+.diagram-canvas{max-height:70vh;overflow:auto;background:white;border:1px solid #d7e2eb;border-radius:6px;overscroll-behavior:contain}
+.diagram-canvas svg{display:block;max-width:none;min-width:0;height:auto;margin:15px}
+.hero-start{display:inline-block;margin-top:10px;border:1px solid #bee2f4;border-radius:8px;background:#fff;color:#075a97;padding:9px 18px;font-weight:700}
+.home-layout .card{margin-bottom:22px}.home-layout .search-panel{margin-top:22px}
+.learning-stages{list-style:none;padding:0;margin:20px 0}.learning-stages>li{display:flex;gap:16px;padding:20px 0;border-top:1px solid #dbe6ee}.learning-stages>li:first-child{border-top:0;padding-top:0}.stage-number{flex:0 0 42px;height:42px;display:grid;place-items:center;border-radius:10px;color:#075a97;background:#e6f3fc;font-weight:700;font-size:18px}.learning-stages h3{margin:0;color:var(--navy);font-size:18px}.learning-stages p{margin:5px 0}.learning-stages>li>div{min-width:0}.learning-pager{display:flex;flex-direction:column;gap:9px;margin:18px 0;padding:20px;background:#eaf5fc;border:1px solid #bad8ed;border-radius:12px}.self-check{border:1px solid #c9dce9;border-radius:9px;padding:12px 16px;margin:12px 0;background:#f6fbff}.self-check summary{color:#075a97;cursor:pointer;font-weight:600}.self-check p{margin-bottom:0}.search-categories{margin-top:15px}.search-categories summary{cursor:pointer;color:#075a97}.search-categories .category-list{margin-top:12px}.side-tree .tree-block{margin-left:8px}.side-tree .tree-block>summary{font-size:12px;color:#617489}.home-layout .side-tree>details:has(a.current){border-left:2px solid #68a9d4;padding-left:5px}
+@media(max-width:760px){.learning-stages>li{gap:10px;padding:16px 0}.stage-number{flex-basis:34px;height:34px;font-size:15px}.learning-stages h3{font-size:17px}.diagram-dialog{padding:10px}.diagram-toolbar{gap:6px}.diagram-toolbar span{width:100%}.home-layout .card{padding:18px}.chapter .learning-figure svg{min-width:620px}}
