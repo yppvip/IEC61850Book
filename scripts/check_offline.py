@@ -35,6 +35,7 @@ part74=[p[0] for p in json.loads((OUT/'data/part74-pages.json').read_text(encodi
 new+=part74
 learning=[p[0] for p in json.loads((OUT/'data/learning-pages.json').read_text(encoding='utf-8'))]
 new+=learning
+new+=['object-reference']
 svg_count=xml_count=table_count=0
 for stem in new:
  path=OUT/'chapters'/f'{stem}.html';text=texts[path];table_count+=pages[path].tables
@@ -52,7 +53,7 @@ for stem in new:
   try:ET.fromstring(html.unescape(raw));xml_count+=1
   except ET.ParseError as exc:errors.append(f'{stem}: XML example {exc}')
 node=Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe'
-js="global.window={};require('./outputs/data/terms.js');require('./outputs/data/part72-terms.js');require('./outputs/data/part73-terms.js');"+("require('./outputs/data/part74-terms.js');" if part74 else '')+"require('./outputs/data/learning-terms.js');process.stdout.write(JSON.stringify(window.IEC61850_TERMS));"
+js="global.window={};require('./outputs/data/terms.js');require('./outputs/data/part72-terms.js');require('./outputs/data/part73-terms.js');"+("require('./outputs/data/part74-terms.js');" if part74 else '')+"require('./outputs/data/learning-terms.js');require('./outputs/data/object-reference-terms.js');process.stdout.write(JSON.stringify(window.IEC61850_TERMS));"
 terms=json.loads(subprocess.check_output([str(node),'-e',js],cwd=ROOT))
 ids=[t['id'] for t in terms]
 if len(ids)!=len(set(ids)):errors.append('duplicate term IDs')
@@ -65,10 +66,10 @@ for t in terms:
  if t.get('href'):
   u=urlsplit(t['href']);target=(OUT/unquote(u.path)).resolve()
   if not target.exists() or (u.fragment and target in pages and unquote(u.fragment) not in pages[target].ids):errors.append('invalid term link '+t['id'])
- if t['id'].startswith(('acsi72-','part72-','part73-','cdc-','da-','fc-','presence-')):
+ if t['id'].startswith(('acsi72-','part72-','part73-','cdc-','da-','fc-','presence-','objref-')):
   for rel in t.get('related',[]):
    if rel not in ids:errors.append(f"{t['id']}: missing related {rel}")
-for f in [OUT/'assets/navigation.js',OUT/'assets/home.js',OUT/'assets/app.js',OUT/'data/learning-terms.js',OUT/'data/part72-terms.js',OUT/'data/part73-terms.js']+([OUT/'assets/part74.js',OUT/'data/part74-terms.js'] if part74 else []):
+for f in [OUT/'assets/navigation.js',OUT/'assets/home.js',OUT/'assets/app.js',OUT/'data/learning-terms.js',OUT/'data/part72-terms.js',OUT/'data/part73-terms.js',OUT/'data/object-reference-terms.js']+([OUT/'assets/part74.js',OUT/'data/part74-terms.js'] if part74 else []):
  subprocess.run([str(node),'--check',str(f)],check=True)
 evidence=json.loads((OUT/'data/part72-evidence.json').read_text(encoding='utf-8'))
 from part73_data import CDC,DICTIONARY,CONDITIONS

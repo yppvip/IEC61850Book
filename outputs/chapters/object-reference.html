@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>对象引用：语法、SCD 追踪与工程使用｜IEC 61850 离线知识库</title><link rel="stylesheet" href="../assets/style.css"></head>
+<body><header class="top"><div class="chapter"><p class="section-kicker">数据模型 · 模型入门 · 工程常用专题</p><h1>对象引用：语法、SCD 追踪与工程使用</h1><p>从一个信号名，找到对象、类型与通信配置；用同一条证据链完成开发和调试复习。</p></div></header>
+<main class="chapter">
+<section><h2 id="overview">先看结论与查阅路线</h2>
+<p><strong>对象引用（ObjectReference）是 IEC 61850 信息模型中定位某个实例的路径。</strong>定位到数据属性时，也称数据属性引用。工程口语中的“信号引用”“点名”应结合工具上下文理解；ObjectName 只是某一层的局部名称。对象引用不是 IP 地址、XML XPath、ASN.1 OID 或单独的类型模板 ID。</p>
+<p>上级：<a href="ied-data-model.html">数据模型 → IED 与数据模型</a>。建议先认识 LD、LN、DO、DA，再读本页；随后进入 <a href="scd-reading-toolbox.html">SCD 阅读工具箱</a>和<a href="control-blocks-reference.html">数据集与控制块</a>。页内目录可直接复习。</p>
+<div class="component-grid"><a href="#breakdown"><b>拿到一个信号名</b><span>拆解 PROT/PDIS1.Str.general</span></a><a href="#syntax"><b>确认引用到哪一层</b><span>LD、LN、DO、属性、数据集和控制块</span></a><a href="#scd"><b>反查 SCD 配置</b><span>实例字段 → 类型链 → FCDA</span></a><a href="#practice"><b>解决开发与调试问题</b><span>掌握范围、排障顺序与自检</span></a></div>
+<nav class="object-reference-shortcuts" aria-label="专题速查"><p>快速复习：<a href="#naming">完整名与 FC</a> · <a href="#measurement">测量类型链</a> · <a href="#dataset">FCD / FCDA 粒度</a> · <a href="#mms">MMS / SDK 表示</a> · <a href="#exchange">发布与订阅</a> · <a href="#troubleshooting">分层排障</a> · <a href="#self-check">自检答案</a> · <a href="#sources">来源与证据</a></p></nav>
+<div class="notice">本文是原创静态技术讲解。依据 IEC 61850-7-2 的引用模型、7-3/7-4 的数据语义、6 的 SCL 组织及 8-1 的 MMS 映射分别解释。引用字符数、数组和服务细节需核对适用版次，不能把早期版限制当作跨版次全集。所有 XML 均为从指定 SCD 重构、脱敏并裁剪的教学片段，不是标准原文、设备手册或可投产工程。</div></section>
+
+<section><h2 id="breakdown">1. 如何拆解 PROT/PDIS1.Str.general</h2>
+<pre><code>PROT / PDIS1 . Str . general
+ LD     LN      DO      DA</code></pre>
+<div class="reference-table"><table><thead><tr><th>片段</th><th>能直接识别什么</th><th>需要继续确认什么</th></tr></thead><tbody>
+<tr><td><code>PROT</code></td><td>这里占据 LDName 位置</td><td>是完整 LDName，还是工具省略 IED 名后的 LD 实例名？不能只靠 PROT 判断。</td></tr>
+<tr><td><code>PDIS1</code></td><td>无前缀、lnClass=PDIS、inst=1；距离保护节点实例</td><td>编号 1 不足以证明距离Ⅰ段；适用对象、保护区域和整定按工程绑定与设备资料确认。</td></tr>
+<tr><td><code>Str</code></td><td>保护启动信息数据对象；PDIS 标准模型中采用 ACD</td><td>沿实际类型模板确认是否实现及包含的属性。</td></tr>
+<tr><td><code>general</code></td><td>总启动指示 DA，标准 ACD 中为 BOOLEAN、FC=ST</td><td>读取结果仍需结合 Str.q、Str.t、模式及信号绑定；不是跳闸出口或断路器反馈。</td></tr>
+</tbody></table></div>
+<p><strong>名称给出定位线索；类型给出值的解释；工程绑定给出实际用途。</strong>不能凭 IED 名、prefix 或 MAC/APPID 推断实际业务。<code>Str.general</code> 是启动指示；<code>Op.general</code> 是动作信息，后续是否形成出口与一次设备是否执行还须沿功能链核查。详见<a href="ln-protection.html#PDIS">PDIS 专用数据</a>和<a href="protection-control-fundamentals.html">启动、动作、出口与反馈</a>。</p>
+<p>本页指定 SCD 中没有 PDIS 实例。因此本节保留为原创语法教学例子；下面实际工程证据使用文件中的 GGIO 和 PTRC，不能把它们标成 PDIS 的工程证据。</p></section>
+
+<section><h2 id="syntax">2. 语法、层级与使用位置</h2>
+<pre><code>常用层级表示（非完整的所有服务对象语法）：
+LDRef             = LDName
+LNRef             = LDName/LNName
+DataRef           = LDName/LNName.DO[.SDO...]
+属性引用           = LDName/LNName.DO[.SDO...].DA[.BDA...]
+LNName            = prefix + lnClass + inst
+
+永久数据集引用      = LDName/LNName.DataSetName
+控制块抽象引用      = LDName/LNName.ControlBlockName</code></pre>
+<p><code>/</code> 分隔 LD 和 LN；<code>.</code> 分隔后续层级。方括号、占位名和省略号表示语法说明，不是要输入的字符。名称区分大小写。<code>LLN0</code> 是专门的管理逻辑节点名，不再额外拼上一个 0。必须结合对象类别判断 LN 下的名字指 DO、DataSet 还是控制块，不能仅按点的数量识别。</p>
+<div class="reference-table"><table><thead><tr><th>层级 / 形式</th><th>教学例子</th><th>典型用途与边界</th></tr></thead><tbody>
+<tr><td>LDRef</td><td><code>DemoIED_1MEAS</code></td><td>浏览 LD 下的 LN。它本身不是一个布尔或模拟量。</td></tr>
+<tr><td>LNRef</td><td><code>DemoIED_1MEAS/GOGGIO1</code></td><td>定位节点，查询数据或其他对象目录。</td></tr>
+<tr><td>DO / SDO 引用</td><td><code>DemoIED_1MEAS/GOGGIO1.AnIn1</code></td><td>定位整个数据对象；按服务和 FC 读取适用属性组，不承诺一次返回所有 FC。</td></tr>
+<tr><td>结构 DA 引用</td><td><code>DemoIED_1MEAS/GOGGIO1.AnIn1.mag</code></td><td>这里 mag 是结构属性；需查看 DAType 及返回结构。</td></tr>
+<tr><td>叶子 BDA 引用</td><td><code>DemoIED_1MEAS/GOGGIO1.AnIn1.mag.f</code></td><td>定位浮点叶子；所属 FC 从上层 DA mag 取得。</td></tr>
+<tr><td>永久 DataSet 引用</td><td><code>DemoIED_1MEAS/LLN0.DemoSet_1</code></td><td>定位有序成员集合，读目录/成员值或供控制块关联。</td></tr>
+<tr><td>控制块抽象引用</td><td><code>DemoIED_1MEAS/LLN0.DemoGoCB_1</code></td><td>定位发布控制对象；协议字段与 SDK 具体格式另核对，见第 7 节。</td></tr>
+</tbody></table></div>
+<p><strong>不能把每个点后的名称都称为 DA。</strong>测量对象可能经过 DO → SDO → DA → BDA，例如教学路径 <code>MMXU1.A.phsA.cVal.mag.f</code> 中，phsA 是 SDO，cVal 是结构 DA，mag/f 是结构分量。SDO 通过 DOType 追踪，BDA 通过 DAType 追踪。层级身份由模板决定。</p>
+<p>数组引用还涉及元素下标及适用版次的访问规则，常见引用记法含 <code>(n)</code>；SCL 的 <code>count</code>、<code>ix</code> 与 SDK 的数组访问参数应分别处理。不要删除下标、假定一律从 1 计数，或把下标当成 LN 实例号。本页提取脚本对数组显式报未支持，不假装完成数组映射。关联专用数据集还存在 <code>@DataSetName</code> 表达；<code>@ldInst/...</code> 是特定 SCL 对象引用值的 IED 相对形式，均不能当作任意接口中的绝对 DO 路径。详见<a href="acsi-common-types.html#references">公共类型与作用域</a>。</p></section>
+
+<section><h2 id="naming">3. 完整 LDName、LNName 与 FC</h2>
+<pre><code>通常的产品命名方式：
+IED@name = DemoIED_1
+LDevice@inst = MEAS
+LDName = DemoIED_1MEAS                 （直接拼接，无额外斜杠）
+
+LN@prefix = GO ; LN@lnClass = GGIO ; LN@inst = 1
+LNName = GOGGIO1
+
+对象引用 = DemoIED_1MEAS/GOGGIO1.AnIn1.mag.f
+FC       = MX</code></pre>
+<p>若适用版本、能力与工程采用显式 <code>LDevice@ldName</code>，则通信可见 LDName 按该字段确定，不再机械拼接 IED 名。本参考 SCD 没有配置 ldName，因此本页按通常产品命名重建路径；实际设备目录仍应与加载的工程版本核对。不要试图从任意 LDName 字符串反向猜出 IED 名与 ldInst 的分界，应使用工程字段建立索引。</p>
+<p>FC（Functional Constraint，功能约束）把数据属性按用途分组，常用 ST 状态、MX 测量、CF 配置、CO 控制、DC 描述、SG/SE 定值组/编辑视图。FC 不是数据类型，也不单独授予读写权限；<code>fc=SV</code> 表示取代属性组，与采样值协议 SV 不同。</p>
+<p>软件应保留 <strong>服务器/接入点上下文 + ObjectReference + FC</strong>，并关联工程修订、类型与业务绑定。相同引用文本可能出现在不同设备连接或项目版本中；只有一个字符串不足以成为跨项目测点唯一键。</p></section>
+
+<section><h2 id="scd">4. SCD 怎样组织对象，怎样提取</h2>
+<figure class="concept-figure"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 310" role="img" aria-labelledby="ref-flow-title ref-flow-desc"><title id="ref-flow-title">从 SCL 实例和类型重建对象引用</title><desc id="ref-flow-desc">先查实例字段和服务器，再沿 lnType、DOType、DAType 确定层级、类型与功能约束，最后与数据集和控制块关联。</desc><rect class="svg-node" x="20" y="20" width="850" height="65" rx="8"/><text class="svg-text" x="40" y="47">实例：IED → AccessPoint → Server → LDevice → LN / LN0</text><text class="svg-note" x="40" y="70">取 IED 名、ldName / inst、prefix、lnClass、inst；保留接入点作用域</text><path class="svg-link" d="M440 85 V110 m-5 -6 l5 6 l5 -6"/><rect class="svg-node" x="20" y="115" width="850" height="65" rx="8"/><text class="svg-text" x="40" y="142">类型：lnType → LNodeType.DO → DOType → DA / DAType.BDA</text><text class="svg-note" x="40" y="165">有 SDO 则继续 DOType；枚举继续 EnumType；BDA 沿所属 DA 取得 FC</text><path class="svg-link" d="M440 180 V205 m-5 -6 l5 6 l5 -6"/><rect class="svg-node" x="20" y="210" width="850" height="65" rx="8"/><text class="svg-text" x="40" y="237">交换：FCDA → DataSet → ReportControl / GSEControl → ExtRef 候选</text><text class="svg-note" x="40" y="260">数据源与控制块拥有者分别定位；文件关系与运行证据分别核对</text></svg><figcaption>原创追踪图：实例定义“在哪里”，类型定义“是什么”，交换配置定义“怎样组织传输”。</figcaption></figure>
+<ol><li><strong>读取根版本和命名空间。</strong>使用 XML 解析器绑定 <code>http://www.iec.ch/61850/2003/SCL</code>，不能用文件中的 namespace 前缀拼死 XPath。相同命名空间字符串不代表全部版次相同。</li>
+<li><strong>定位 IED / AP / Server / LD。</strong>数据集 FCDA 的 ldInst 定位本 IED 中的数据源 LD；ExtRef 用 iedName 指向源 IED。若多个 AP 暴露同一 Server，须结合 ServerAt 和设备模型处理，本页脚本仅处理所选直接 Server 实例。</li>
+<li><strong>定位 LN。</strong>按 prefix、lnClass、lnInst 联合查找，对应 LN 上的 prefix、lnClass、inst；LLN0 单独处理。不要把 LN 的 inst 与 FCDA 的 lnInst 属性名混用。</li>
+<li><strong>沿模板核对路径。</strong>用 LN@lnType 找 LNodeType@id，再按 DO@name 查 DOType。doName 可包含点分隔的 SDO；daName 从顶层 DA 继续，结构 bType=Struct 时沿 DAType/BDA 展开，枚举沿 EnumType 确认编码。</li>
+<li><strong>核对 FC 和粒度。</strong>叶子 BDA 继承所属 DA 的 FC；若没有 daName，按 FCD 语义检查该 FC 下的属性组，不自行补为 stVal 或 general。</li>
+<li><strong>组装并保存证据。</strong>输出规范化路径、FC、基础类型、CDC、源行、所属服务器和工程哈希；将“找不到”“多候选”“类型冲突”“当前提取器不支持”分别记录。</li></ol>
+<pre><code>提取流程（教学伪代码，省略版次细节）：
+source = resolve_IED_and_server(context, fields)
+ld     = unique_LDevice(source, inst=fields.ldInst)
+ln     = unique_LN(ld, fields.prefix, fields.lnClass, fields.lnInst)
+types  = follow_types(ln.lnType, fields.doName, fields.daName)
+check_FC(types.owning_DA, fields.fc)
+LDName = configured_ldName_or_product_name(source.IED.name, ld)
+return {server_context, ObjectReference, FC, type, source_location}</code></pre>
+<div class="notice"><strong>DOI/SDI/DAI 不是完整的数据模型目录。</strong>它们承载实例配置；未显式出现 DAI，不代表 DA 不存在。应先从类型模板建立模型，再读取实例配置覆盖或初始值。DAI/Val 不能当作实时运行值；lnType、DOType@id 和 DAType@id 是类型引用，不拼入运行对象路径。</div>
+<p>本专题的可复现提取器位于项目 <code>scripts/build_object_reference.py</code>，网页运行时只读本地静态内容，不读取源 SCD。该脚本检查所选普通路径、唯一性和类型/FC，不实现完整 SCL 校验、ServerAt 解析或数组访问。</p></section>
+
+<section><h2 id="measurement">5. 实际例子：AnIn1.mag.f 的完整类型链</h2>
+<p>从指定 SCD 中选择第一个满足 <code>prefix=GO、lnClass=GGIO、doName=AnIn1、daName=mag.f</code> 且所属节点有 GSEControl 的数据集成员。保留标准技术名称、字段与源行；IED、类型 ID、数据集、控制块和 AP 名统一替换为 Demo 别名，其余非必要内容省略。</p>
+<div class="reference-table"><table><thead><tr><th scope="col">核对项</th><th scope="col">脱敏结果</th><th scope="col">来源 / 边界</th></tr></thead><tbody><tr><td>对象引用 / FC</td><td>DemoIED_1MEAS/GOGGIO1.AnIn1.mag.f [MX]</td><td>由实际字段重建，IED 名已替换</td></tr><tr><td>数据集拥有者</td><td>DemoIED_1MEAS/LLN0</td><td>数据源 LD 与数据集拥有者分别解析</td></tr><tr><td>DataSet / 成员序号</td><td>DemoSet_1 / 第 1 项（从 1 计）</td><td>DataSet 行 41916；FCDA 行 41917</td></tr><tr><td>成员粒度</td><td>属性路径 mag.f</td><td>CDC=MV</td></tr><tr><td>GSEControl</td><td>DemoGoCB_1</td><td>行 42056；datSet 引用同一数据集</td></tr><tr><td>Communication/GSE</td><td>iedName + apName + ldInst + cbName 联合匹配</td><td>行 121；地址不作为业务语义证据</td></tr></tbody></table></div><pre data-language="xml"><code>&lt;SCLExcerpt&gt;
+  &lt;IED name=&quot;DemoIED_1&quot;&gt;
+    &lt;AccessPoint name=&quot;DemoAP&quot;&gt;
+      &lt;Server&gt;
+        &lt;LDevice inst=&quot;MEAS&quot;&gt;
+          &lt;LN inst=&quot;1&quot; lnClass=&quot;GGIO&quot; lnType=&quot;DemoLNType_1&quot; prefix=&quot;GO&quot;/&gt;
+        &lt;/LDevice&gt;
+      &lt;/Server&gt;
+    &lt;/AccessPoint&gt;
+  &lt;/IED&gt;
+  &lt;DataTypeTemplates&gt;
+    &lt;LNodeType id=&quot;DemoLNType_1&quot; lnClass=&quot;GGIO&quot;&gt;
+      &lt;DO name=&quot;AnIn1&quot; type=&quot;DemoDOType_1&quot;/&gt;
+    &lt;/LNodeType&gt;
+    &lt;DOType cdc=&quot;MV&quot; id=&quot;DemoDOType_1&quot;&gt;
+      &lt;DA bType=&quot;Struct&quot; dchg=&quot;true&quot; fc=&quot;MX&quot; name=&quot;mag&quot; type=&quot;DemoDAType_1&quot;/&gt;
+    &lt;/DOType&gt;
+    &lt;DAType id=&quot;DemoDAType_1&quot;&gt;
+      &lt;BDA bType=&quot;FLOAT32&quot; name=&quot;f&quot;/&gt;
+    &lt;/DAType&gt;
+  &lt;/DataTypeTemplates&gt;
+&lt;/SCLExcerpt&gt;</code></pre><div class="reference-table"><table><thead><tr><th scope="col">层级</th><th scope="col">名称 / 类型别名</th><th scope="col">定义字段</th><th scope="col">源行</th></tr></thead><tbody><tr><td>LN</td><td>GOGGIO1</td><td>inst=1; lnClass=GGIO; lnType=DemoLNType_1; prefix=GO</td><td>47928</td></tr><tr><td>LNodeType</td><td>DemoLNType_1</td><td>lnClass=GGIO</td><td>1137498</td></tr><tr><td>DO</td><td>AnIn1</td><td>type=DemoDOType_1</td><td>1137503</td></tr><tr><td>DOType</td><td>DemoDOType_1</td><td>cdc=MV</td><td>1156333</td></tr><tr><td>DA</td><td>mag</td><td>bType=Struct; dchg=true; fc=MX; type=DemoDAType_1</td><td>1156334</td></tr><tr><td>DAType</td><td>DemoDAType_1</td><td></td><td>1164688</td></tr><tr><td>BDA</td><td>f</td><td>bType=FLOAT32</td><td>1164689</td></tr></tbody></table></div><pre data-language="xml"><code>&lt;ExchangeExcerpt&gt;
+  &lt;DataSet name=&quot;DemoSet_1&quot;&gt;
+    &lt;FCDA daName=&quot;mag.f&quot; doName=&quot;AnIn1&quot; fc=&quot;MX&quot; ldInst=&quot;MEAS&quot; lnClass=&quot;GGIO&quot; lnInst=&quot;1&quot; prefix=&quot;GO&quot;/&gt;
+  &lt;/DataSet&gt;
+  &lt;GSEControl confRev=&quot;1&quot; datSet=&quot;DemoSet_1&quot; name=&quot;DemoGoCB_1&quot; type=&quot;GOOSE&quot;/&gt;
+&lt;/ExchangeExcerpt&gt;</code></pre>
+<p><strong>本例 mag 是 DA，f 是 BDA，FC=MX 来自 mag，叶子类型为 FLOAT32。</strong>q/t 属于 AnIn1，不能拼成 mag.f.q。这个 FCDA 只选择 mag.f，不会自动把 AnIn1.q 和 AnIn1.t 一起加入数据集；是否另有品质/时标成员须看完整集合。不能从 AnIn1 或 prefix=GO 推断它代表哪一路电流、电压或联锁量，单位和实际测点应另查实例及工程绑定。</p>
+<p>XML 使用自定义 SCLExcerpt / ExchangeExcerpt 包装，并只保留链上相关元素；它们能被 XML 解析器读取，但不是合法完整 SCL 文件。数据集原有其他成员均省略，不能按这个缩略片段推算原报文全结构。</p></section>
+
+<section><h2 id="dataset">6. 实际例子：Str 的 FCD 与属性成员</h2>
+<p>本例选择文件中第一个 PTRC.Str、FC=ST 且不含 daName 的 FCDA，展示“对象 + FC”的成员粒度。PTRC 是保护相关节点类，不能替代 PDIS 的距离保护专用语义；本例只用于比较 Str 的实际类型结构和数据集组织。</p>
+<div class="reference-table"><table><thead><tr><th scope="col">核对项</th><th scope="col">脱敏结果</th><th scope="col">来源 / 边界</th></tr></thead><tbody><tr><td>对象引用 / FC</td><td>DemoIED_2PROT/PTRC1.Str [ST]</td><td>由实际字段重建，IED 名已替换</td></tr><tr><td>数据集拥有者</td><td>DemoIED_2PROT/LLN0</td><td>数据源 LD 与数据集拥有者分别解析</td></tr><tr><td>DataSet / 成员序号</td><td>DemoSet_2 / 第 1 项（从 1 计）</td><td>DataSet 行 114336；FCDA 行 114337</td></tr><tr><td>成员粒度</td><td>FCD：该 DO 的 ST 属性组</td><td>CDC=ACD</td></tr><tr><td>ReportControl</td><td>DemoRCB_1</td><td>行 114479；datSet 引用同一数据集</td></tr></tbody></table></div><pre data-language="xml"><code>&lt;SCLExcerpt&gt;
+  &lt;IED name=&quot;DemoIED_2&quot;&gt;
+    &lt;AccessPoint name=&quot;DemoAP&quot;&gt;
+      &lt;Server&gt;
+        &lt;LDevice inst=&quot;PROT&quot;&gt;
+          &lt;LN inst=&quot;1&quot; lnClass=&quot;PTRC&quot; lnType=&quot;DemoLNType_2&quot; prefix=&quot;&quot;/&gt;
+        &lt;/LDevice&gt;
+      &lt;/Server&gt;
+    &lt;/AccessPoint&gt;
+  &lt;/IED&gt;
+  &lt;DataTypeTemplates&gt;
+    &lt;LNodeType id=&quot;DemoLNType_2&quot; lnClass=&quot;PTRC&quot;&gt;
+      &lt;DO name=&quot;Str&quot; type=&quot;DemoDOType_2&quot;/&gt;
+    &lt;/LNodeType&gt;
+    &lt;DOType cdc=&quot;ACD&quot; id=&quot;DemoDOType_2&quot;&gt;
+      &lt;DA bType=&quot;BOOLEAN&quot; dchg=&quot;true&quot; fc=&quot;ST&quot; name=&quot;general&quot;/&gt;
+      &lt;DA bType=&quot;Enum&quot; dchg=&quot;true&quot; fc=&quot;ST&quot; name=&quot;dirGeneral&quot; type=&quot;DemoEnum_1&quot;/&gt;
+      &lt;DA bType=&quot;Quality&quot; fc=&quot;ST&quot; name=&quot;q&quot; qchg=&quot;true&quot;/&gt;
+      &lt;DA bType=&quot;Timestamp&quot; fc=&quot;ST&quot; name=&quot;t&quot;/&gt;
+    &lt;/DOType&gt;
+    &lt;EnumType id=&quot;DemoEnum_1&quot;&gt;
+      &lt;EnumVal ord=&quot;0&quot;&gt;unknown&lt;/EnumVal&gt;
+      &lt;EnumVal ord=&quot;1&quot;&gt;forward&lt;/EnumVal&gt;
+      &lt;EnumVal ord=&quot;2&quot;&gt;backward&lt;/EnumVal&gt;
+      &lt;EnumVal ord=&quot;3&quot;&gt;both&lt;/EnumVal&gt;
+    &lt;/EnumType&gt;
+  &lt;/DataTypeTemplates&gt;
+&lt;/SCLExcerpt&gt;</code></pre><div class="reference-table"><table><thead><tr><th scope="col">层级</th><th scope="col">名称 / 类型别名</th><th scope="col">定义字段</th><th scope="col">源行</th></tr></thead><tbody><tr><td>LN</td><td>PTRC1</td><td>inst=1; lnClass=PTRC; lnType=DemoLNType_2; prefix=</td><td>115673</td></tr><tr><td>LNodeType</td><td>DemoLNType_2</td><td>lnClass=PTRC</td><td>1138647</td></tr><tr><td>DO</td><td>Str</td><td>type=DemoDOType_2</td><td>1138657</td></tr><tr><td>DOType</td><td>DemoDOType_2</td><td>cdc=ACD</td><td>1156959</td></tr><tr><td>DA</td><td>general</td><td>bType=BOOLEAN; dchg=true; fc=ST</td><td>1156960</td></tr><tr><td>DA</td><td>dirGeneral</td><td>bType=Enum; dchg=true; fc=ST; type=DemoEnum_1</td><td>1156961</td></tr><tr><td>DA</td><td>q</td><td>bType=Quality; fc=ST; qchg=true</td><td>1156962</td></tr><tr><td>DA</td><td>t</td><td>bType=Timestamp; fc=ST</td><td>1156963</td></tr></tbody></table></div><pre data-language="xml"><code>&lt;ExchangeExcerpt&gt;
+  &lt;DataSet name=&quot;DemoSet_2&quot;&gt;
+    &lt;FCDA doName=&quot;Str&quot; fc=&quot;ST&quot; ldInst=&quot;PROT&quot; lnClass=&quot;PTRC&quot; lnInst=&quot;1&quot; prefix=&quot;&quot;/&gt;
+  &lt;/DataSet&gt;
+  &lt;ReportControl bufTime=&quot;0&quot; buffered=&quot;true&quot; confRev=&quot;1&quot; datSet=&quot;DemoSet_2&quot; intgPd=&quot;0&quot; name=&quot;DemoRCB_1&quot;/&gt;
+&lt;/ExchangeExcerpt&gt;</code></pre>
+<div class="reference-table"><table><thead><tr><th>成员形式</th><th>选取内容</th><th>接收解释</th></tr></thead><tbody>
+<tr><td><code>doName="Str" fc="ST"</code>，无 daName</td><td>Str 在 ST 下的属性组。本例实际模板含 general、dirGeneral、q、t</td><td>一个数据集成员可以返回结构，不等于一个布尔值；DC 下的 dU 不属于本 ST 成员。</td></tr>
+<tr><td><code>doName="Str" daName="general" fc="ST"</code></td><td>仅总启动指示属性（本行是粒度对照教学写法）</td><td>可按 BOOLEAN 解释，但不能假定自动附带 q/t。</td></tr>
+<tr><td><code>doName="AnIn1" daName="mag.f" fc="MX"</code></td><td>第 5 节实际选取的叶子</td><td>FLOAT32 值；所属数据集的其他成员另查。</td></tr>
+</tbody></table></div>
+<p><strong>FCDA 是 SCL 元素名，不保证每个成员都是叶子属性。</strong>在适用规则下，它也描述 FCD 成员。数据集顺序有意义；不要按名称排序后与接收数组逐项配对。结构内部顺序应按模型和映射规则解析，不能拿目录服务返回的名称排序代替。</p>
+<p>报告可能只携带发生变化的部分数据集成员，须结合 inclusion 信息定位；一个结构成员内部又包含多个属性。GOOSE 的 allData 按数据集成员及其结构解释，不能把“第几个叶子”直接当成“第几个 FCDA”。confRev 用于相关配置一致性核对，不能把它当成整个 SCD 文件的全局版本。</p></section>
+
+<section><h2 id="mms">7. 点路径、MMS 名称和 SDK 表示</h2>
+<div class="reference-table"><table><thead><tr><th>表达所在层</th><th>教学例子</th><th>需要记住</th></tr></thead><tbody>
+<tr><td>ACSI 属性引用 + FC</td><td><code>DemoIED_1MEAS/GOGGIO1.AnIn1.mag.f</code>，MX</td><td>ObjectReference 与功能约束分别保留。</td></tr>
+<tr><td>MMS Domain-specific 名称</td><td><code>domainID=DemoIED_1MEAS</code><br><code>itemID=GOGGIO1$MX$AnIn1$mag$f</code></td><td>逻辑设备映射为域，项目名中包含 FC；这里是普通非数组属性映射示意。</td></tr>
+<tr><td>工具合并显示</td><td><code>DemoIED_1MEAS/GOGGIO1$MX$AnIn1$mag$f</code></td><td>不表示 MMS 编码中必定存在这一整条字符串。</td></tr>
+<tr><td>某些 SDK 的数据集成员参数</td><td><code>.../GOGGIO1.AnIn1.mag.f[MX]</code></td><td>例如 libIEC61850 的创建成员接口采用该表示；不是把 [MX] 作为通用对象名一部分。</td></tr>
+<tr><td>GOOSE gocbRef 的映射形式</td><td><code>DemoIED_1MEAS/LLN0$GO$DemoGoCB_1</code></td><td>标识发布控制块；不能拿它代替叶子属性引用。</td></tr>
+<tr><td>报告控制块的 MMS 项目名</td><td><code>LLN0$BR$DemoRCB_1</code> 或 <code>LLN0$RP$DemoRCB_1</code></td><td>BR 为缓存报告，RP 为非缓存报告；实际实例名和 SDK 调用形式需查设备目录/接口。</td></tr>
+</tbody></table></div>
+<p>开发时先建立结构化模型，再按目标接口序列化。不要用“把所有点替换为美元符号”实现万能转换：还要处理 FC、对象类别、作用域、数组，以及数据集/控制块的专用映射。报告 RptID、GOOSE goID 和 APPID 都不等于数据属性 ObjectReference。</p></section>
+
+<section><h2 id="exchange">8. 从信号走到控制块与订阅</h2>
+<ol><li><strong>由属性反查 FCDA。</strong>既查精确 daName，也检查同一 DO/FC 的 FCD 或结构成员是否包含该属性；保留全部候选。</li><li><strong>定位数据集拥有者。</strong>记录包含 DataSet 的 LN/LD；FCDA 的 ldInst 是数据源 LD，不保证等于数据集拥有者 LD。</li><li><strong>查同一拥有者下引用 datSet 的控制块。</strong>同一信号可能进入多个数据集、报告、日志或 GOOSE，不能默认一对一。</li><li><strong>按服务查通信配置。</strong>GOOSE 使用源 IED、AP、控制块所在 LD 和 GSE@cbName 关联；SV 查对应 SMV。MMS/报告则关联服务器接入点、地址与客户端使用状态。</li><li><strong>反查接收端 ExtRef。</strong>按源 IED、LD、LN、DO、DA 和适用的 serviceType/src* 字段缩小候选；配置缺少控制块信息时记录多义性，不根据 MAC/APPID 认定业务。</li></ol>
+<p>源文件行 116694 的实际输入声明重构如下；发布方 IED 名和内部绑定已替换。该记录没有声明 serviceType 或 srcCBName，不能据此补造唯一发布控制块。</p><pre data-language="xml"><code>&lt;ExtRef iedName=&quot;DemoIED_3&quot; intAddr=&quot;DemoInternalBinding&quot; ldInst=&quot;RPIT&quot; prefix=&quot;&quot; lnClass=&quot;XCBR&quot; lnInst=&quot;1&quot; doName=&quot;Pos&quot; daName=&quot;stVal&quot;/&gt;</code></pre>
+<p>这条 ExtRef 描述源端 <code>XCBR1.Pos.stVal</code>，而拥有 Inputs 的 LN 是接收端。<code>intAddr</code> 是实现相关的接收内部绑定，本页替换为 DemoInternalBinding；即使原值看起来像对象路径，也不能直接当成标准源引用。ExtRef 没有 fc 字段，源属性的 FC 应沿类型或匹配的发布成员确认。</p>
+<p>有源对象不代表已进入数据集，有发布控制块不代表本文件一定声明接收订阅；有 ExtRef 也不能证明订阅已下载或运行生效。网页提供静态追踪方法，不连接装置或提供报文解析功能。</p></section>
+
+<section><h2 id="practice">9. 开发人员与调试人员掌握清单</h2>
+<div class="reference-table"><table><thead><tr><th>能力</th><th>软件开发人员应做到</th><th>现场调试人员应做到</th></tr></thead><tbody>
+<tr><td>定位与语法</td><td>保留大小写、服务器作用域、完整 LDName、FC；不硬编码固定层级。</td><td>能把工具显示的短名核对为实际设备目录中的完整引用。</td></tr>
+<tr><td>类型与语义</td><td>解析 DO/SDO、DA/BDA、枚举与基础类型；不把所有 ST 当 BOOLEAN。</td><td>说明启动、动作、位置反馈的区别，查明实际信号绑定。</td></tr>
+<tr><td>交换与结构</td><td>识别 FCD/属性成员，按数据集顺序、报告 inclusion 和结构定义解释值。</td><td>追到数据集、控制块、接收输入；区分配置缺项与运行未使能。</td></tr>
+<tr><td>质量与时间</td><td>正确关联 q/t、源时间与接收时间，保留过期、坏品质、测试/取代信息。</td><td>不以“有值”判定可用，不把接收时间当作源事件时间。</td></tr>
+<tr><td>版本与故障</td><td>维护工程版本和模型快照，分别报告对象不存在、FC 不符、类型冲突与访问失败。</td><td>核对 SCD、装置加载版本、客户端点表和现场资料是否一致。</td></tr>
+<tr><td>写入与控制</td><td>按 CO 和控制状态机处理 Oper/SBO 等，不能通过写 ST 代替控制。</td><td>核查实际控制对象、权限、模式和反馈；信号可读不证明可控。</td></tr>
+</tbody></table></div>
+<p><strong>完成标准：</strong>面对陌生信号，能交付一条可复核记录：服务器上下文、完整引用、FC、类型/CDC、q/t 归属、数据集与成员粒度、控制块候选、工程版本和未决问题。无需背下所有节点名称，但必须能沿模板查明。</p>
+<p>随手记录卡：<code>连接/工程版本 → ObjectReference + FC → 类型 → 数据来源/业务绑定 → DataSet/成员位置 → 控制块/订阅 → 当前值、q、t → 尚缺证据</code>。继续读<a href="developer-data-contracts.html#record">应用数据契约</a>与<a href="engineering-model-reading.html">工程证据核查</a>。</p></section>
+
+<section><h2 id="troubleshooting">10. 常见错误与排查顺序</h2>
+<div class="reference-table"><table><thead><tr><th>现象</th><th>优先核查</th></tr></thead><tbody>
+<tr><td>对象不存在</td><td>服务器/AP 是否正确 → PROT 是否只是 ldInst → prefix/大小写/实例号 → 实际目录与加载版本 → 类型路径。</td></tr>
+<tr><td>路径看起来正确但读取失败</td><td>FC、服务支持、访问视窗/权限与设备状态；单看错误文本不能断定根因。</td></tr>
+<tr><td>SCD 中搜不到 general 的 DAI</td><td>先查 LN 的 lnType 和 DOType；实例没有显式配置该成员不等于类型不存在。</td></tr>
+<tr><td>收到一个结构而不是布尔值</td><td>FCDA 是否没有 daName，或选取了结构 DA；按模板解释，不能随意取第一个元素。</td></tr>
+<tr><td>报告/GOOSE 信号对应错位</td><td>数据集修订、成员顺序、FCD 展开及报告 inclusion；不要按名称排序或固定叶子偏移。</td></tr>
+<tr><td>值在变化，品质/时标没更新</td><td>q/t 是否单独入集或包含在结构中；触发选项、关联关系和接收策略是否正确。</td></tr>
+<tr><td>同一属性找到多个控制块</td><td>保留候选并按服务、拥有者和接收声明缩小范围；不能任选一条充当唯一来源。</td></tr>
+</tbody></table></div>
+<p>复习顺序：<strong>连接与版本 → 完整名 → 类型路径 → FC → 数据集粒度 → 控制块/订阅 → 值、品质和时间 → 业务与现场证据。</strong></p></section>
+
+<section><h2 id="self-check">11. 用五道题自检</h2>
+<details class="self-check"><summary>PROT/PDIS1.Str.general 可以直接作为任何设备上的读取地址吗？</summary><p>不可以。先确认 PROT 是否完整 LDName、连接的服务器、该 PDIS 实例及类型是否存在，再确定 FC=ST 与接口表达。本参考 SCD 没有 PDIS。</p></details>
+<details class="self-check"><summary>mag.f 中哪一段提供 FC？q/t 应该挂在哪里？</summary><p>实际例子中 mag 是 DA，提供 MX；f 是 BDA。q/t 是 AnIn1 的同级 DA，路径为 AnIn1.q / AnIn1.t，不是 mag.f.q。</p></details>
+<details class="self-check"><summary>没有 daName 的 Str、FC=ST 成员等于 Str.general 吗？</summary><p>不等于。它是 FCD，本例选取 general、dirGeneral、q、t 的结构；不包含 DC 下的 dU。结构和顺序按实际类型及映射确认。</p></details>
+<details class="self-check"><summary>ExtRef.intAddr 看起来像路径，能拿来定位发布端吗？</summary><p>不能只凭形状判断。发布端由 iedName/ldInst/prefix/lnClass/lnInst/doName/daName 等描述；intAddr 表示接收内部绑定，具体语义依实现。</p></details>
+<details class="self-check"><summary>Str.general=true 且品质良好，能证明断路器已经跳闸吗？</summary><p>不能。它只说明对应启动信息，仍需动作、出口、控制或执行回路及位置反馈的证据。</p></details></section>
+
+<section><h2 id="sources">来源、工程基线与继续阅读</h2>
+<p>工程来源：项目 <code>source/南雷变2026041614.scd</code>；根声明 <code>version="2007" revision="B" release="4"</code>。读取统计如下，logical_nodes 包含 LN/LN0；ldName 指显式配置该属性的 LDevice 数，pdis 统计 lnClass=PDIS 的 LN。</p>
+<div class="reference-table"><table><thead><tr><th scope="col">文件观察</th><th scope="col">数量</th></tr></thead><tbody><tr><td>ied</td><td>82</td></tr><tr><td>logical_nodes</td><td>7229</td></tr><tr><td>ldName</td><td>0</td></tr><tr><td>pdis</td><td>0</td></tr><tr><td>extref</td><td>2658</td></tr></tbody></table></div>
+<p>源文件 SHA-256：<code>d6a4ab874091fc1df326b59ca6df5bd340360d7eaeec0d916fb3989642ae236f</code>。提取结果保存为本地<a href="../data/object-reference-evidence.json">对象引用工程证据 JSON</a>，含脱敏路径、定义源行、控制块源行和选择边界。页内源行从 1 起，文件变化后应重新提取；别名用于本页关联，不能复制为实际装置地址。源 SCD 未修改，不需要随网页分发。</p>
+<p>规范分工：IEC 61850-7-2 对象层级、ObjectName/ObjectReference 与数据服务；7-3 ACD/MV 等结构和 FC；7-4 PDIS、PTRC、GGIO 与 DO 语义；6 的 IED/LDevice/LN、模板、FCDA 与 ExtRef；8-1 的 MMS 命名映射。本站既有标准导读采用明示的 2003/2004 基线，工程文件为 2007 B4，两者分别解释。本次完成 XML 读取与选取实例的引用核对，不声称完成源 SCD 全量引用、完整 XSD 或设备/现场校验。</p>
+<p>公开接口与技术核对：<a href="https://www.beanit.com/iec-61850/javadoc/com/beanit/iec61850bean/ObjectReference.html">Beanit ObjectReference 接口文档</a>用于核对路径形式；<a href="https://libiec61850.com/documentation/iec-61850-client-tutorial/">libIEC61850 官方客户端教程</a>用于核对读取参数、FC 与数据集成员表示；<a href="https://iec61850.tissue-db.com/tissues/779">IEC Tissue 779</a>用于核对 IED 相对引用和通信可见绝对引用的边界。外部链接仅供来源追溯，正文、示例、图表和搜索均可离线使用。</p>
+<p>继续阅读：<a href="acsi-common-types.html#references">公共类型与引用作用域</a> · <a href="scd-reading-toolbox.html">SCD 阅读工具箱</a> · <a href="control-blocks-reference.html">数据集与控制块</a> · <a href="developer-data-contracts.html">开发数据契约</a> · <a href="../index.html#object-reference-entry">返回首页速查入口</a>。</p></section>
+</main><footer class="foot">IEC 61850 离线知识库 · 对象引用定位实例，工程与运行证据确认实际用途</footer><script src="../assets/navigation.js"></script></body></html>

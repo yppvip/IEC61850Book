@@ -1,0 +1,156 @@
+{
+  "source": "../source/南雷变2026041614.scd",
+  "sha256": "d6a4ab874091fc1df326b59ca6df5bd340360d7eaeec0d916fb3989642ae236f",
+  "scl": {
+    "version": "2007",
+    "revision": "B",
+    "release": "4"
+  },
+  "statistics": {
+    "ied": 82,
+    "logical_nodes": 7229,
+    "ldName": 0,
+    "pdis": 0,
+    "extref": 2658
+  },
+  "examples_are_renamed": true,
+  "cases": [
+    {
+      "case": "measurement",
+      "object_reference": "DemoIED_1MEAS/GOGGIO1.AnIn1.mag.f",
+      "fc": "MX",
+      "cdc": "MV",
+      "leaf_type": "FLOAT32",
+      "fcda_line": 41917,
+      "dataset_line": 41916,
+      "member_position_one_based": 1,
+      "chain": [
+        [
+          "LN",
+          "GOGGIO1",
+          "inst=1; lnClass=GGIO; lnType=DemoLNType_1; prefix=GO",
+          47928
+        ],
+        [
+          "LNodeType",
+          "DemoLNType_1",
+          "lnClass=GGIO",
+          1137498
+        ],
+        [
+          "DO",
+          "AnIn1",
+          "type=DemoDOType_1",
+          1137503
+        ],
+        [
+          "DOType",
+          "DemoDOType_1",
+          "cdc=MV",
+          1156333
+        ],
+        [
+          "DA",
+          "mag",
+          "bType=Struct; dchg=true; fc=MX; type=DemoDAType_1",
+          1156334
+        ],
+        [
+          "DAType",
+          "DemoDAType_1",
+          "",
+          1164688
+        ],
+        [
+          "BDA",
+          "f",
+          "bType=FLOAT32",
+          1164689
+        ]
+      ],
+      "control_blocks": [
+        {
+          "kind": "GSEControl",
+          "alias": "DemoGoCB_1",
+          "line": 42056
+        }
+      ],
+      "exact_field_extref_matches": 0
+    },
+    {
+      "case": "start",
+      "object_reference": "DemoIED_2PROT/PTRC1.Str",
+      "fc": "ST",
+      "cdc": "ACD",
+      "leaf_type": null,
+      "fcda_line": 114337,
+      "dataset_line": 114336,
+      "member_position_one_based": 1,
+      "chain": [
+        [
+          "LN",
+          "PTRC1",
+          "inst=1; lnClass=PTRC; lnType=DemoLNType_2; prefix=",
+          115673
+        ],
+        [
+          "LNodeType",
+          "DemoLNType_2",
+          "lnClass=PTRC",
+          1138647
+        ],
+        [
+          "DO",
+          "Str",
+          "type=DemoDOType_2",
+          1138657
+        ],
+        [
+          "DOType",
+          "DemoDOType_2",
+          "cdc=ACD",
+          1156959
+        ],
+        [
+          "DA",
+          "general",
+          "bType=BOOLEAN; dchg=true; fc=ST",
+          1156960
+        ],
+        [
+          "DA",
+          "dirGeneral",
+          "bType=Enum; dchg=true; fc=ST; type=DemoEnum_1",
+          1156961
+        ],
+        [
+          "DA",
+          "q",
+          "bType=Quality; fc=ST; qchg=true",
+          1156962
+        ],
+        [
+          "DA",
+          "t",
+          "bType=Timestamp; fc=ST",
+          1156963
+        ]
+      ],
+      "control_blocks": [
+        {
+          "kind": "ReportControl",
+          "alias": "DemoRCB_1",
+          "line": 114479
+        }
+      ],
+      "exact_field_extref_matches": 0
+    }
+  ],
+  "extref_example_line": 116694,
+  "limits": [
+    "XML structure and selected reference resolution only",
+    "No complete XSD or device validation",
+    "No PDIS instance and no explicit ldName in this file",
+    "Array and full edition-specific validation are outside this extractor"
+  ]
+}

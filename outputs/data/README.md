@@ -1,5 +1,9 @@
 # 离线百科数据格式
 
+## 对象引用专题数据
+
+`object-reference-terms.js` 在所有既有术语脚本之后、`app.js` 之前加载，按稳定 ID 增补 8 个专题入口。`object-reference-evidence.json` 保存指定 SCD 的 SHA-256、版本、统计和所选路径的源行；发布名称均为 Demo 别名，网页运行不请求该 JSON。由 `../../scripts/build_object_reference.py` 生成，正文模板在 `../../scripts/templates/object-reference.html`。只读源 SCD，不进行设备操作或完整模式校验。
+
 `terms.js` 将词条赋给全局变量 `window.IEC61850_TERMS`，以便直接双击打开 `index.html` 时无需通过网络请求加载 JSON。
 
 每项字段：

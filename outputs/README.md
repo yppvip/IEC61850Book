@@ -15,6 +15,26 @@
 
 标准文库和 LN / CDC 全表作为进阶查阅材料，知识树按“基础 → 专题 → 字典 / 参考工程”分组。七个一级栏目保留；“SCL 与工程交换文件”归入 SCL 配置，缩写表归入术语索引。首页与章节共享 `assets/navigation.js` 中的栏目数据；学习主线页面有上一步、继续阅读和返回路线入口。
 
+## 对象引用专题（2026-10-15）
+
+新增[对象引用：语法、SCD 追踪与工程使用](chapters/object-reference.html)，归入“数据模型 → 模型入门”，并加入学习顺序、首页常用速查卡、知识树和 8 个术语深链接。可搜索“对象引用”“ObjectReference”“PROT/PDIS1.Str.general”“LDName”“FCD”“MMS对象名”等进入对应章节；IED 模型、SCD 工具箱、控制块、保护节点及开发数据契约等 8 个相关章节均可进入。
+
+内容包括：LD/LN/DO/SDO/DA/BDA 拆解、不同层级的用途、完整 LDName 与 ldInst、FC、实例和类型模板、FCD/FCDA 粒度、MMS/SDK 表示、发布与输入订阅、开发/调试掌握清单、分层排障及五道自检题。正文和原创追踪图静态写入 HTML，可直接用 file:// 离线阅读。
+
+读取指定 `../source/南雷变2026041614.scd`（SCL 2007 B4），确认 82 个 IED、7229 个 LN/LN0、2658 个 ExtRef，没有 PDIS 实例，也未配置 LDevice@ldName。选择实际 GGIO.AnIn1.mag.f 和 PTRC.Str 的类型链及数据集，补充一个实际 XCBR.Pos.stVal 输入声明。IED、类型 ID、数据集、控制块、AP 和内部绑定采用一致的 Demo 别名；源行、文件 SHA-256 和提取边界保存在 [object-reference-evidence.json](data/object-reference-evidence.json)。PROT/PDIS1.Str.general 仅作为教学示例；不混作该工程的实际配置。源 SCD 未修改。
+
+维护命令：
+
+```text
+python scripts/build_object_reference.py
+python scripts/check_offline.py
+node scripts/preview_object_reference.cjs
+```
+
+内容源为 `scripts/templates/object-reference.html`；生成脚本只读源 SCD、提取所选路径并幂等接入导航、首页、术语和关联章节。重建首页或旧专题后重新运行本脚本可恢复入口。脚本检查所选普通路径的唯一性、类型与 FC，遇数组会明确拒绝；不实现完整 SCL 校验或 ServerAt 解析。浏览器验证记录位于 `tmp/object-reference-preview`，不作为离线发布依赖。XML 教学片段可解析不等于完整 XSD 或现场功能已验证。
+
+验证记录：全库 70 个 HTML 页、1411 个术语的本地链接、锚点、资源及脚本检查通过；新专题的 SVG 和 5 个重构 XML 片段可解析。Edge 在离线模式直接打开 file://，检查 1440 / 960 / 390 px 布局、导航与页内跳转、7 类搜索和深链接、学习前后页、五题中的答案展开交互、图表放大/Esc 关闭及 8 个关联章节入口；无脚本异常、整页横向溢出或远程请求，并视觉复核桌面/手机首屏。另核对实际 FLOAT32 类型链、错误 FC/缺失 BDA/缺失 LD/未支持数组的拒绝处理、重复生成一致性和源 SCD 哈希不变。
+
 ## 开发人员电气入门补充（2026-10-14）
 
 新增 7 页，正文、原创图表、自检题与答案均静态写入 HTML，无网络依赖：
