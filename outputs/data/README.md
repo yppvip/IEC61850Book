@@ -37,3 +37,7 @@
 首页在四份既有术语文件之后、`app.js` 之前加载 `learning-terms.js`。它用 `learn-` 前缀追加 21 个电气基础与学习入口词条，按稳定 ID 更新，`href` 指向可离线打开的专题与锚点。包含三相、功率、接线、CT、采样、SOE、保护与开发数据语义；这些是原创入门词条，不声称属于 IEC 61850-2 的完整术语清单。
 
 `learning-pages.json` 是 7 页维护清单，仅供构建和验证脚本使用；网页不读取 JSON。`scripts/build_learning.py` 维护内容、教学例子、8 阶段路径和词条，`scripts/build_learning_home.py` 复用同一路径生成首页。术语加载后合计 1403 项，保留全部既有稳定 ID。
+
+## 常用 LD 与继电保护九统一
+
+`protection-guides-terms.js` 在 `app.js` 前追加 10 个稳定 ID 的专题词条。`common-datasets-evidence.json` 保存只读参考 SCD 的 SHA-256、源行、所选成员顺序及类型、控制块引用计数；IED 与非空 LN 前缀及报告标识使用 Demo 别名。网页运行不读取 JSON；正文在构建时写入 HTML。由 `../../scripts/build_protection_guides.py` 生成，不代表工程符合九统一或完整 SCL 校验通过。

@@ -126,7 +126,16 @@
         "IED 与数据模型",
         "模型入门"
       ],
-      ["object-reference.html", "对象引用：语法、SCD 追踪与工程使用", "模型入门"],
+      [
+        "object-reference.html",
+        "对象引用：语法、SCD 追踪与工程使用",
+        "模型入门"
+      ],
+      [
+        "common-ld-datasets.html",
+        "常用 LD 与数据集：dsTripInfo 调试案例",
+        "模型入门"
+      ],
       [
         "data-attributes-reference.html",
         "数据、数据属性与 CDC 取值参考",
@@ -344,6 +353,11 @@
         "开发与综合练习"
       ],
       [
+        "setting-group-development.html",
+        "修改定值与切换定值组：通信流程与开发实现",
+        "开发与综合练习"
+      ],
+      [
         "feeder-learning-case.html",
         "综合练习：从一条馈线读到工程证据",
         "开发与综合练习"
@@ -367,6 +381,18 @@
         "symptom-troubleshooting.html",
         "现象到排障路径库",
         "工程查证与排障"
+      ]
+    ]
+  },
+  {
+    "id": "protection",
+    "label": "继电保护九统一",
+    "entry": "nine-unifications.html",
+    "items": [
+      [
+        "nine-unifications.html",
+        "九统一：设计、模型与信息规范",
+        "标准化设计导读"
       ]
     ]
   },
@@ -398,7 +424,7 @@
       return `<details class="tree-block" ${!current || items.some(([file]) => file === current) ? 'open' : ''}><summary>${block}</summary><ul>${items.map(([file,label]) => `<li><a class="${file === current ? 'current' : ''}" href="${prefix}${file}" ${file === current ? 'aria-current="page"' : ''}>${label}</a></li>`).join('')}</ul></details>`;
     }).join('')}</details>`;
   }
-  const learningOrder = ['learning-path','electrical-fundamentals','primary-diagrams','primary-and-roles','measurement-chain','protection-control-fundamentals','protection-ied-guide','bay-and-automation-levels','three-level-two-network','core-concept-comparisons','acsi-abstraction','ied-data-model','object-reference','data-attributes-reference','cdc-common-types','control-input-models','engineering-files','scd-in-ten-minutes','scd-reading-toolbox','annotated-xml-examples','control-blocks-reference','communication-process','acsi-services','service-mapping','packet-analysis','developer-data-contracts','feeder-learning-case','engineering-model-reading','engineering-practice','symptom-troubleshooting','safety-and-test-boundaries'];
+  const learningOrder = ['learning-path','electrical-fundamentals','primary-diagrams','primary-and-roles','measurement-chain','protection-control-fundamentals','protection-ied-guide','bay-and-automation-levels','three-level-two-network','core-concept-comparisons','acsi-abstraction','ied-data-model','object-reference','data-attributes-reference','cdc-common-types','control-input-models','engineering-files','scd-in-ten-minutes','scd-reading-toolbox','annotated-xml-examples','control-blocks-reference','communication-process','acsi-services','service-mapping','packet-analysis','developer-data-contracts','setting-group-development','feeder-learning-case','engineering-model-reading','engineering-practice','symptom-troubleshooting','safety-and-test-boundaries'];
   window.IEC61850_NAV = { groups, tree, learningOrder };
 
   const chapter = document.querySelector('main.chapter');

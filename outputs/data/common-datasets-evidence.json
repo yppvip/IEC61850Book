@@ -1,0 +1,271 @@
+{
+  "source": "project-reference-scd (identity omitted)",
+  "sha256": "779aa32b641d38dd82bf78c66d48354b9f6e4c21b594f4da38fe3a7e431468d6",
+  "scope": "This file only; first dsTripInfo in document order. No business meaning or standards compliance inferred from names.",
+  "ld_counts": {
+    "LD0": 57,
+    "PROT": 38,
+    "MEAS": 50,
+    "CTRL": 50,
+    "RCD": 38,
+    "PIGO": 49,
+    "PISV": 19,
+    "RPIT": 18,
+    "MUSV": 18,
+    "MUGO": 6
+  },
+  "dataset_counts": {
+    "dsTripInfo": 38,
+    "dsAlarm": 56,
+    "dsWarning": 89,
+    "dsRelayEna": 56,
+    "dsRelayBlk": 38,
+    "dsRelayState": 38,
+    "dsRelayFunEn": 38,
+    "dsDeviceState": 38,
+    "dsCommState": 46,
+    "dsRelayAin": 38,
+    "dsAin": 107,
+    "dsDin": 18,
+    "dsRelayDin": 38,
+    "dsSetting": 34,
+    "dsSetGrpNum": 38,
+    "dsGOOSE": 68,
+    "dsSV": 7,
+    "dsLog": 64
+  },
+  "trip_count": 38,
+  "selected": {
+    "ied_alias": "DemoProtection",
+    "ld": "PROT",
+    "ln": "LLN0",
+    "dataset": "dsTripInfo",
+    "members": [
+      {
+        "index": 1,
+        "fcda": {
+          "doName": "Str",
+          "fc": "ST",
+          "ldInst": "PROT",
+          "lnClass": "PTRC",
+          "lnInst": "1",
+          "prefix": ""
+        },
+        "cdc": "ACD",
+        "attributes_in_source_order": [
+          {
+            "name": "general",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "dirGeneral",
+            "bType": "Enum"
+          },
+          {
+            "name": "q",
+            "bType": "Quality"
+          },
+          {
+            "name": "t",
+            "bType": "Timestamp"
+          }
+        ]
+      },
+      {
+        "index": 2,
+        "fcda": {
+          "doName": "Op",
+          "fc": "ST",
+          "ldInst": "PROT",
+          "lnClass": "PTOC",
+          "lnInst": "1",
+          "prefix": "Demo"
+        },
+        "cdc": "ACT",
+        "attributes_in_source_order": [
+          {
+            "name": "general",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "phsA",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "phsB",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "phsC",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "neut",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "q",
+            "bType": "Quality"
+          },
+          {
+            "name": "t",
+            "bType": "Timestamp"
+          }
+        ]
+      },
+      {
+        "index": 3,
+        "fcda": {
+          "doName": "Op",
+          "fc": "ST",
+          "ldInst": "PROT",
+          "lnClass": "PTOC",
+          "lnInst": "2",
+          "prefix": "Demo"
+        },
+        "cdc": "ACT",
+        "attributes_in_source_order": [
+          {
+            "name": "general",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "phsA",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "phsB",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "phsC",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "neut",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "q",
+            "bType": "Quality"
+          },
+          {
+            "name": "t",
+            "bType": "Timestamp"
+          }
+        ]
+      },
+      {
+        "index": 4,
+        "fcda": {
+          "doName": "Op",
+          "fc": "ST",
+          "ldInst": "PROT",
+          "lnClass": "PTOC",
+          "lnInst": "3",
+          "prefix": "Demo"
+        },
+        "cdc": "ACT",
+        "attributes_in_source_order": [
+          {
+            "name": "general",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "phsA",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "phsB",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "phsC",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "neut",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "q",
+            "bType": "Quality"
+          },
+          {
+            "name": "t",
+            "bType": "Timestamp"
+          }
+        ]
+      },
+      {
+        "index": 5,
+        "fcda": {
+          "doName": "Op",
+          "fc": "ST",
+          "ldInst": "PROT",
+          "lnClass": "PTRC",
+          "lnInst": "1",
+          "prefix": ""
+        },
+        "cdc": "ACT",
+        "attributes_in_source_order": [
+          {
+            "name": "general",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "q",
+            "bType": "Quality"
+          },
+          {
+            "name": "t",
+            "bType": "Timestamp"
+          }
+        ]
+      },
+      {
+        "index": 6,
+        "fcda": {
+          "doName": "StrBF",
+          "fc": "ST",
+          "ldInst": "PROT",
+          "lnClass": "PTRC",
+          "lnInst": "1",
+          "prefix": ""
+        },
+        "cdc": "ACT",
+        "attributes_in_source_order": [
+          {
+            "name": "general",
+            "bType": "BOOLEAN"
+          },
+          {
+            "name": "q",
+            "bType": "Quality"
+          },
+          {
+            "name": "t",
+            "bType": "Timestamp"
+          }
+        ]
+      }
+    ],
+    "control_counts": {
+      "ReportControl": 1,
+      "GSEControl": 0,
+      "SampledValueControl": 0
+    },
+    "report": {
+      "buffered": "true",
+      "datSet": "dsTripInfo",
+      "confRev": "1",
+      "bufTime": "0",
+      "intgPd": "0"
+    },
+    "source_lines": {
+      "dataset": 114335,
+      "report": 114478
+    }
+  },
+  "aliases": "IED, nonempty LN prefix and report identity replaced with Demo aliases; original type IDs omitted."
+}

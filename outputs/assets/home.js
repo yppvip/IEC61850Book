@@ -12,7 +12,7 @@
   const left = document.createElement('aside'); left.className = 'side-tree'; left.setAttribute('aria-label','知识树');
   left.innerHTML = '<p class="side-title">按学习层次查阅</p><p><a href="chapters/learning-path.html">从编程到电气 · 学习路线 →</a></p>' + catalog.groups.map(g => catalog.tree(g, g.id === 'knowledge' ? 'learning-path.html' : '', 'chapters/')).join('');
   const right = document.createElement('aside'); right.className = 'page-outline'; right.setAttribute('aria-label','首页目录');
-  right.innerHTML = '<p class="side-title">本页目录</p><ol><li><a href="#start">学习起点</a></li><li><a href="#learning-route">8 阶段学习路径</a></li><li><a href="#object-reference-entry">对象引用速查</a></li><li><a href="#reference">标准与专题查阅</a></li><li><a href="#search">离线术语检索</a></li></ol>';
+  right.innerHTML = '<p class="side-title">本页目录</p><ol><li><a href="#start">学习起点</a></li><li><a href="#learning-route">8 阶段学习路径</a></li><li><a href="#object-reference-entry">对象引用速查</a></li><li><a href="#setting-group-entry">定值开发专栏</a></li><li><a href="#practical-model-entry">LD / 数据集与九统一</a></li><li><a href="#reference">标准与专题查阅</a></li><li><a href="#search">离线术语检索</a></li></ol>';
   shell.before(layout); layout.append(left,shell,right);
   const toggle = nav.querySelector('.nav-toggle');
   toggle.addEventListener('click', () => toggle.setAttribute('aria-expanded', String(nav.classList.toggle('nav-open'))));

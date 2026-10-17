@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>修改定值与切换定值组：通信流程与开发实现｜IEC 61850 离线知识库</title><link rel="stylesheet" href="../assets/style.css"><link rel="stylesheet" href="../assets/setting-groups.css"></head>
+<body><header class="top"><div class="chapter"><p class="section-kicker">工程应用 · 开发与综合练习</p><h1>修改定值与切换定值组：通信流程与开发实现</h1><p>从 SGCB 和 SG/SE 视图，走到客户端状态机、服务端提交、异常恢复与两网适配。</p></div></header><main class="chapter settings-guide">
+<section><h2 id="overview">1. 阅读位置、已有内容与版本</h2>
+<p>上级：<a href="developer-data-contracts.html">工程应用 · 给开发人员的数据契约与工程边界</a>。前置阅读：<a href="cdc-setting.html#setting-flow">SP、SG、SE 与定值 CDC</a>、<a href="acsi-runtime-models.html#settings">定值组抽象模型</a>、<a href="object-reference.html#mms">对象引用与 MMS 名称</a>。</p>
+<p><strong>现有知识库有定值组的属性、六类服务和缓冲区模型，本页补齐可供开发人员参考的完整通信闭环。</strong>修改某组参数与把某组投入运行是两个请求：编辑非激活组后确认，不会自动切到该组；编辑当前激活组后确认，按适用版本语义可重新激活更新值，不能把确认理解成始终只保存、不影响运行。[S1、S4]</p>
+<div class="setting-callout">本页为静态开发参考。流程图、数值、伪代码均为原创脱敏教学示例，不等同于可投产程序、设备手册、标准原文或现场验收。本站没有设备连接、报文发送、上传或定值下装功能。</div>
+<p><strong>版本：</strong>本站旧章节基线为 DL/T 860.72—2004 / IEC 61850-7-2:2003；本页以 7-2 Ed2 服务语义串联流程，并标注 Ed2/Ed2.1 的预约和恢复问题。服务名称、可选属性及错误映射按项目采用的 7-2、8-1 版次、TICS、PICS、PIXIT 核对，不把新版本选项当成旧设备必选项。资料核对日期：2026-10-17。</p>
+<nav class="setting-shortcuts" aria-label="专栏快捷入口"><a href="#edit-flow">修改定值</a><a href="#activate-flow">切换定值组</a><a href="#grid-differences">国网与南网</a><a href="#client">客户端伪代码</a><a href="#failures">异常恢复</a><a href="#tests">联调用例</a></nav></section>
+<section><h2 id="intent">2. 区分三种业务操作</h2>
+<div class="reference-table"><table><thead><tr><th>用户意图</th><th>协议操作</th><th>完成证据</th></tr></thead><tbody>
+<tr><td>修改不采用定值组的普通参数</td><td>按模型和权限读写 FC=SP 的可写属性；不强行套 SGCB</td><td>写响应、读回值、设备定义的生效条件</td></tr>
+<tr><td>修改第 k 组的一项或多项定值</td><td>SelectEditSG(k) → 写 SE → 读回 SE → ConfirmEditSGValues</td><td>提交应答与提交后组内容核对；编辑回显不等于已保存</td></tr>
+<tr><td>将第 k 组投入运行</td><td>SelectActiveSG(k) → 读 SGCB → 读 SG</td><td>ActSG=k，运行 SG 值与目标快照一致；LActTm 作辅助证据</td></tr>
+</tbody></table></div>
+<p>SP 是功能约束，不表示所有定值都直接写 SP。SGCB 本身映射在 SP 下，组内待编辑参数用 SE；SG 是激活组视图，不能写 SG 代替写 SE。SelectEditSG 也不是控制模型的 SBO，不能用 SelectWithValue / Operate 替换。[S2、S3]</p></section>
+<section><h2 id="objects">3. SGCB、引用与三个值域</h2>
+<p>定位顺序：IED/访问点/服务器 → 完整 LDName → LLN0.SGCB → 该块管理的 LN 定值对象 → 属性及 FC。基线中一个 LD 的 SGCB 位于 LLN0；跨 LD 关联另核采用版本的层级规则和设备说明，不能从 IED 名推断整机所有组一起切。</p>
+<figure class="concept-figure setting-figure">{{BUFFERS}}<figcaption>SE 是编辑副本，SG 是运行视图，组存储保存各组内容；三者不能混成一张可随意写入的表。</figcaption></figure>
+<div class="reference-table"><table><thead><tr><th>SGCB 属性</th><th>语义 / 类型</th><th>开发用途</th></tr></thead><tbody>
+<tr><td>NumOfSG</td><td>组数，INT8U；普通组号 1..NumOfSG</td><td>读取能力；不能通过写它动态新建组；特殊虚拟区另核规约</td></tr>
+<tr><td>ActSG</td><td>激活组号，INT8U</td><td>经 SelectActiveSG 切换；SCL actSG 只是配置初值</td></tr>
+<tr><td>EditSG</td><td>编辑组号，INT8U；0 为未选组</td><td>选组成功后才访问 SE；非零不证明本关联拥有预约</td></tr>
+<tr><td>CnfEdit</td><td>确认编辑，BOOLEAN 命令属性</td><td>写 true 触发提交；不要求捕获一个持久的 true</td></tr>
+<tr><td>LActTm</td><td>最近激活时间，TimeStamp</td><td>结合 ActSG、SG 核对，不能单凭时间判定目标值生效</td></tr>
+<tr><td>ResvTms</td><td>预约时间，INT16U，秒；Ed2 可选</td><td>0 为当前未预约；缺失不等于没有锁或无限时间。Ed2.1 中读值为倒计时还是配置时长需核 PIXIT，不能照搬 BRCB 写法。[S4、S5、S8]</td></tr>
+</tbody></table></div>
+<p>教学设备完整 LDName 为 <code>DemoIEDPROT</code>，ASG 对象 <code>PTOC1.StrVal</code>，叶属性 <code>setMag.f</code>。组号不编码进这条路径，由 EditSG 决定 SE 对应哪组。实际设备是否存在该 LN/DO、采用 f 还是 i，应沿实例和类型定义确认。</p></section>
+<section><h2 id="mapping">4. ACSI 服务映射到 MMS Read / Write</h2>
+<p>此类操作在 IEC 61850-8-1 中由 MMS 命名变量读写表达，线上不另有名为 SelectEditSG 的 MMS PDU。下表展示语义级映射；PDU 编码、invokeID、类型与协商上限交给选定协议栈。[S2、S3]</p>
+<div class="reference-table"><table><thead><tr><th>ACSI 意图</th><th>MMS domainID</th><th>MMS itemID（教学）</th><th>服务 / 值</th></tr></thead><tbody>
+<tr><td>GetSGCBValues</td><td>DemoIEDPROT</td><td>LLN0$SP$SGCB</td><td>Read 结构，或按映射读成员</td></tr>
+<tr><td>SelectEditSG</td><td>DemoIEDPROT</td><td>LLN0$SP$SGCB$EditSG</td><td>Write unsigned 2</td></tr>
+<tr><td>GetEditSGValue / GetSGValues（SE）</td><td>DemoIEDPROT</td><td>PTOC1$SE$StrVal$setMag$f</td><td>Read 浮点值</td></tr>
+<tr><td>SetEditSGValue / SetSGValues</td><td>DemoIEDPROT</td><td>PTOC1$SE$StrVal$setMag$f</td><td>Write 类型匹配的 FLOAT32</td></tr>
+<tr><td>ConfirmEditSGValues</td><td>DemoIEDPROT</td><td>LLN0$SP$SGCB$CnfEdit</td><td>Write boolean true</td></tr>
+<tr><td>SelectActiveSG</td><td>DemoIEDPROT</td><td>LLN0$SP$SGCB$ActSG</td><td>Write unsigned 2</td></tr>
+<tr><td>GetDataValues / GetEditSGValue（SG）</td><td>DemoIEDPROT</td><td>PTOC1$SG$StrVal$setMag$f</td><td>Read 当前运行组值</td></tr>
+</tbody></table></div>
+<p>部分 SDK 接受 <code>DemoIEDPROT/LLN0.SGCB.EditSG</code> 加独立 <code>FC=SP</code>，部分接受带 $ 的名称。分清 SDK 引用、MMS domainID/itemID 和类型，不能整串机械替换。旧基线常见 SetSGValues/GetSGValues，新版可见 SetEditSGValue/GetEditSGValue，按语义和版次对应。</p></section>
+<section><h2 id="preflight">5. 前置准备：能力、权限与变更计划</h2>
+<ol><li>固定标准版次、项目规约、设备型号和固件版本；核对 PICS 服务支持、PIXIT 定值行为和 TICS 修订采用情况。</li>
+<li>解析 SCL 的 Services/SettingGroups、LDevice/LN0/SettingControl 以及 LN/DO/DA 类型与 FC。SGEdit、ConfSG 及 resvTms 分别描述编辑、配置和相应能力；配置初值不能证明当前值或在线写权限。[S5]</li>
+<li>建立关联后读取实际模型及 SGCB。远方/就地、允许修改条件、权限与组间联动按已核实对象和规则处理，不猜对象名。</li>
+<li>生成计划：完整引用、FC、类型、单位/倍率、范围、步长、目标组、旧值、新值、关联约束。示例数值仅演示编码，不提供保护整定建议。</li>
+<li>区分仅保存、修改激活组、保存后切组。若 ActSG 在过程中改变，应重新评估，不能沿用开始时的影响判断。</li></ol>
+<p>读取非激活组通常需选入编辑缓冲再读 SE，也会占用 SGCB。不要在后台循环切 EditSG 刷新所有组，干扰已有编辑事务。</p></section>
+<section><h2 id="edit-flow">6. 修改定值：选组 → 写入 → 校核 → 确认</h2>
+<p>教学情境：ActSG=1，修改第 2 组的一个浮点参数，暂不激活第 2 组。1.00 → 1.25 仅作通信示例，单位和适用范围另核。</p>
+<figure class="concept-figure setting-figure">{{EDIT}}<figcaption>每个请求等待对应结果；任一写项失败或读回不一致，转入取消/恢复，不发送 CnfEdit=true。</figcaption></figure>
+<ol><li><strong>选组：</strong>SelectEditSG(2) 成功后核对 EditSG。预约归当前关联；另一个客户端的 EditSG=2 不代表己方选组成功。[S4]</li>
+<li><strong>读基线：</strong>从 SE 取得第 2 组旧值，与变更计划核对；不能拿 SG 的第 1 组旧值代替。</li>
+<li><strong>写 SE：</strong>按类型写每项值，逐项检查访问结果。一条 MMS Write 传输成功不表示全部访问项成功；分批写也不是设备级原子事务。</li>
+<li><strong>读回 SE：</strong>核对全部变更项及关联项；浮点按设备精度和量化规则比较，保存预期值、编码值和读回值。</li>
+<li><strong>确认：</strong>再次检查 ActSG、预约与条件后调用 ConfirmEditSGValues。客户端检查仍有并发窗口，最终校验需设备侧联锁或项目协调。不能只观察 CnfEdit 的 true/false 认定成功。</li>
+<li><strong>提交后校核：</strong>检查 SGCB 和组内容。按 Ed2 预约流程，成功确认后释放编辑预约，EditSG 回到 0；该状态不能单独证明值已保存。非激活组按能力重新选择再读 SE，完成后释放；这是一次新预约。若预约失败，标记“提交已应答、保存读回待核对”。本例 ActSG 应仍为 1，运行 SG 不应因本次编辑变成第 2 组。</li></ol>
+<p><strong>当前组例外：</strong>修改 ActSG 指向的组并确认时，Ed2 语义要求重新激活更新值，应核对运行 SG 及应用状态。不能因没有另写 ActSG 就认为运行值未改变。[S1、S4]</p></section>
+<section><h2 id="activate-flow">7. 切换定值组：只切换，或保存后再切换</h2>
+<figure class="concept-figure setting-figure">{{ACTIVATE}}<figcaption>只切组不必先写 SE 或 CnfEdit；保存后激活则先完成上一节，再单独进入此流程。</figcaption></figure>
+<p>核对目标组有效、内容已核验、切组许可；本客户端不得有未决编辑/提交，其他编辑者按项目互锁策略处理。SelectActiveSG(k) 成功后读 ActSG、LActTm 和运行 SG。读值前后再读 ActSG 可发现部分并发切组，但多次 Read 不能凭空构成原子快照，强一致性需设备机制。</p>
+<p>ActSG=k 是组号证据，SG 是运行参数证据；两者不独自证明所有保护功能已按业务要求工作。保护功能确认、非易失保存是另行约定的验证。切组响应超时应进入结果未知状态，先查实际组号和值，不立即重试或自动回切。[S1、S6]</p></section>
+<section><h2 id="grid-differences">8. 国网与南网：差异如何落实到开发</h2>
+<p><strong>IEC 编辑、确认、激活模型可作为共同实现基础；具体功能与流程可能受企业规范、项目版本和设备实现约束，不能只凭“国网/南网”名称硬编码。</strong>本次未取得足以逐条核验两网差异的完整适用规范原文，下表明确核验状态；不宣称已证明两网完全一致，也不把特殊流程写成全网要求。</p>
+<div class="reference-table"><table><thead><tr><th>比较项</th><th>国家电网项目</th><th>南方电网项目</th><th>实现决策</th></tr></thead><tbody>
+<tr><td>SGCB / SG / SE 与 MMS</td><td>采用相关 IEC/DL/T 服务时按共同模型；具体支持核 PICS</td><td>同样先核共同模型和支持能力</td><td>共用协议核心，按实际能力启用</td></tr>
+<tr><td>企业规范适用版本</td><td>项目适用 Q/GDW 应用模型和技术协议，待逐条核验</td><td>项目适用 Q/CSG 应用模型和技术协议，待逐条核验</td><td>保存编号、年份、条款与固件；未证明任一旧版本仍现行</td></tr>
+<tr><td>允许改当前组 / 必须写暂存组</td><td>待规范和设备手册核验；不预设一定直接改当前组</td><td>待规范和设备手册核验；不预设一定用暂存组</td><td>配置 editTargetPolicy、activeEditAllowed；未核实的写路径不启用</td></tr>
+<tr><td>虚拟区和复制提交</td><td>未核实统一规则</td><td>“虚拟 31 区”为待核验兼容线索，不能凭企业名推断存在</td><td>无适用条款时不写 31，不当作可激活普通组</td></tr>
+<tr><td>单项/整组下装、校验码、定值单</td><td>待项目规约确定</td><td>待项目规约确定</td><td>配置写入粒度、校验范围/算法与反馈对象，不虚构统一 CRC</td></tr>
+<tr><td>远方许可、监护、认证、审计</td><td>待系统和装置约定</td><td>待系统和装置约定</td><td>业务授权与 IED 权限分开；MMS 成功不替代业务完成</td></tr>
+<tr><td>跨 LD 联动和掉电保存</td><td>核设备及版本</td><td>核设备及版本</td><td>明确作用域和失败边界，不默认整机原子切换</td></tr>
+</tbody></table></div>
+<h3>特殊暂存区应该怎样处理</h3><p>仅当适用规约明确“先写暂存区，再复制/投入目标运行区”时采用下图。<strong>复制暂存区到目标区不等于 SelectActiveSG(暂存区号)</strong>；目标运行区可能保持原区号。复制服务、目标参数、回执、组号范围及失败恢复均须有对应条款，本页不补造命令。</p>
+<figure class="concept-figure setting-figure">{{STAGING}}<figcaption>适配思路示意；“按规约”是必须补齐的设备接口，未定义通用 31 区算法。</figcaption></figure>
+<p>适配记录至少保存标准/技术协议版本、条款页码、型号/固件、普通组范围、暂存语义、整组写要求、确认/生效方式、核验对象、超时/掉电行为和实验室验证记录。按“项目＋设备＋版本”配置策略，不能只有 isNangwang 布尔开关。</p>
+<details class="self-check"><summary>练习：NumOfSG=15，能因设备位于南网就写 EditSG=31 吗？</summary><p>不能。普通组按声明范围选择，特殊编号必须有适用规约和设备明确支持；出现 31 也不能自行认定可激活或代表复制提交。</p></details></section>
+<section><h2 id="client">9. 客户端状态机与伪代码</h2>
+<p>以下为语言无关设计示意，没有可执行网络函数。状态名为本文建议。串行化范围至少为同一设备服务器下同一 SGCB，事务绑定关联标识，不换连接继续用预约。</p>
+<pre><code>READY → SELECTING → EDITING → VERIFIED → CONFIRMING → COMMITTED
+                                           ↓ 超时 / 断链
+                                        UNCERTAIN
+COMMITTED → VERIFY_SAVED → SAVED_VERIFIED
+SAVED_VERIFIED → ACTIVATING → VERIFY_ACTIVE → ACTIVE_VERIFIED
+
+edit(plan, association):
+  lockLocally(plan.server, plan.sgcb)
+  require verifiedProfile(plan) and authorized(plan)
+  before = readSGCB()
+  require validGroup(plan.group, before, profile)
+  require activationEffectAccepted(plan, before.ActSG)
+  selectEdit(plan.group)                // 必须收到本关联成功应答
+  lease = bindReservation(association)  // 不从 EditSG 非零猜拥有者
+  old = readSE(plan.verificationScope)
+  require baselineMatches(old, plan)
+  for batch in plan.typedWrites:
+    require everyItemSucceeded(writeSE(batch))
+  require equivalent(readSE(plan.verificationScope), plan.expected)
+  require sameAssociationAndValidLease(lease)
+  require currentConditionsAcceptable() // 设备侧仍须做最终校验
+  mark(CONFIRMING)                      // 发出命令前记录阶段
+  confirmEdit()
+  mark(COMMITTED)
+  verifySavedUsingProfile()             // 按激活/非激活选择 SG/重新选组 SE
+  mark(SAVED_VERIFIED)
+
+on failure:
+  if confirmationMayHaveBeenSent or activationMayHaveBeenSent:
+    mark(UNCERTAIN); reconcileByReadback(); doNotReplayAutomatically()
+  else if ownReservationStillValidOnSameAssociation:
+    cancelEditByProfile(); recordOriginalAndCleanupErrors()
+  else:
+    recordReservationLost(); reReadBeforeNewPlan()
+finally:
+  releaseAnyOwnedVerificationReservationByProfile()
+  unlockLocally()</code></pre>
+<p>接口可分为 preparePlan、editGroup、verifySaved、activateGroup、verifyActive、reconcile。结果区分“编辑已校核”“提交已应答”“保存已核验”“激活已应答”“运行值已核验”“结果未知”，不要只返回 success。</p>
+<p>日志包括事务 ID、关联标识、SGCB、目标组、开始/结束 ActSG、各项旧/新/读回值、请求阶段、invokeID、原始错误及清理结果，不记录认证秘密。本地互斥只保护本进程，外部并发仍需设备或业务协调。</p></section>
+<section><h2 id="server">10. 服务端：协议栈之外的实现职责</h2>
+<ol><li><strong>选组：</strong>校验组号、权限和占用；以关联为拥有者加载完整编辑副本，启动适用预约期限。未提交副本与运行值隔离。</li>
+<li><strong>写 SE：</strong>确认拥有者、类型、范围和权限；部分写时保留完整候选组，不把失败项静默改成默认值。</li>
+<li><strong>提交：</strong>再次校验跨项约束、权限与状态；协调持久化、候选组替换和运行更新，明确失败边界与应答时机。一批 Write 不等于存储事务。</li>
+<li><strong>激活：</strong>校验目标内容与联锁，协调应用参数、SG、ActSG 和 LActTm，避免应用读到新旧混合参数。</li>
+<li><strong>清理/重启：</strong>取消、断链和超时丢弃未提交副本并释放预约；掉电恢复应能识别旧版本或新版本，不能留下半组。</li></ol>
+<p>libiec61850 官方 API 提供激活组变更、编辑组变更和确认回调。应用仍需管理组数据、SE 装载、SG 同步与存储。内部切组接口要求先更新相应 SG 属性；确认回调返回 void，不能假设可直接将存储失败变成否定应答，应核实际栈版本与时序再设计集成。[S7]</p>
+<p>一致提交、日志及掉电恢复结构是实现建议，不宣称协议栈自动提供数据库事务或设备已经具备这些能力。</p></section>
+<section><h2 id="failures">11. 失败、取消、断链与超时恢复</h2>
+<div class="reference-table"><table><thead><tr><th>阶段 / 现象</th><th>解释</th><th>处理</th></tr></thead><tbody>
+<tr><td>选组被拒</td><td>占用、权限、非法组号或状态限制</td><td>保留错误并查状态，不抢占或循环写 EditSG</td></tr>
+<tr><td>多项 SE 写部分失败</td><td>编辑副本可能部分改变</td><td>不确认；本关联仍拥有预约时取消，修正后重新选组</td></tr>
+<tr><td>提交前取消</td><td>丢弃未提交编辑</td><td>适用 Ed2 流程以 SelectEditSG(0) 取消；仅拥有者执行，不是提交后回滚。[S4]</td></tr>
+<tr><td>预约到期 / 关联中断</td><td>所有权丢失，旧 SE 不能视为有效</td><td>重连先读 SGCB，再选组取新基线，不从中间继续确认。[S4、S6]</td></tr>
+<tr><td>确认/切组已发，应答超时</td><td>可能已执行，仅响应丢失</td><td>结果未知，读实际组号和值；不自动重放或自动回切</td></tr>
+<tr><td>CnfEdit 读回 false</td><td>命令属性可复位，不能独自说明结果</td><td>结合请求应答和保存/运行读回，不无限等待 true</td></tr>
+<tr><td>确认后重启恢复旧值</td><td>保存时机或实现不符预期</td><td>核 PIXIT 的持久化承诺，在隔离测试环境验证</td></tr>
+<tr><td>读回不一致</td><td>组、FC、类型、量化、并发或设备约束</td><td>按引用→组→类型/单位→响应→状态核查，不靠放宽容差掩盖问题</td></tr>
+</tbody></table></div>
+<p>MMS 每项访问错误、服务级错误、关联错误与本地超时分层保存，不全部解释成“越限”。具体错误码和 ACSI 映射按采用的 8-1 与 SDK 枚举核对。</p>
+<details class="self-check"><summary>练习：确认应答丢失但 SG 已读到新值，能立刻重发 CnfEdit 吗？</summary><p>不能。先核对组号、目标值与并发情况，再恢复业务状态；预约可能已释放。若无法消除歧义，保留结果未知，进入约定恢复流程。</p></details></section>
+<section><h2 id="tests">12. 联调用例与通过条件</h2>
+<p>以下用于独立测试环境。UCA 服务端 sSg 用例覆盖编辑、切组、断链、预约等协议行为，本表补充应用集成问题，不能代替正式一致性测试。[S6]</p>
+<div class="reference-table"><table><thead><tr><th>用例</th><th>应观察的结果</th></tr></thead><tbody>
+<tr><td>不支持 SGEdit / 普通 SP 参数</td><td>正确识别能力，不误走 SGCB</td></tr>
+<tr><td>编辑非激活组并确认</td><td>重选读回已保存值；ActSG 与运行 SG 不因编辑改变</td></tr>
+<tr><td>编辑激活组并确认</td><td>按版次/设备规则更新运行值，提示与记录正确</td></tr>
+<tr><td>只切组 / 保存后切组</td><td>核对 ActSG、SG、辅助 LActTm，保存与激活结果分开</td></tr>
+<tr><td>非法组、错类型、越限、跨项失败</td><td>准确错误，无静默截断或无依据转换，不继续确认</td></tr>
+<tr><td>多项 Write 部分失败</td><td>识别每项结果并取消，未确认副本不污染运行值</td></tr>
+<tr><td>两个客户端争同一 SGCB</td><td>只有拥有者可编辑，相同 EditSG 不冒认预约</td></tr>
+<tr><td>取消、到期、断链重连</td><td>未提交副本不保存，重新选组获得保存基线</td></tr>
+<tr><td>确认/激活前后分别丢响应</td><td>结果未知并读回恢复，不盲重试或自动回切</td></tr>
+<tr><td>其他客户端/本地同时切组</td><td>发现状态变化，证据不一致时不报完整核验通过</td></tr>
+<tr><td>存储失败 / 提交中掉电</td><td>核对持久化与恢复，区分 RAM 生效和非易失保存</td></tr>
+<tr><td>特殊暂存区、整组写、校验码</td><td>仅对有适用条款的配置启用；验证复制/生效及失败恢复</td></tr>
+</tbody></table></div></section>
+<section><h2 id="sources">13. 来源、证据边界与继续阅读</h2>
+<p>正文为原创解释与实现建议；外链只作联网追溯，离线阅读不加载外部资源。</p>
+<ol class="setting-sources"><li id="source-s1"><strong>[S1] IEC 61850-7-2:2010，Clause 16：</strong>SGCB 属性与服务。旧版定位参见 <a href="acsi-runtime-models.html#settings">本站定值组模型</a>，版次可追溯至 <a href="https://iec61850.tissue-db.com/parts/23?order=id">IEC Tissue：7-2 Edition 2</a>；开发须核采用原文。</li>
+<li id="source-s2"><strong>[S2] IEC 61850-8-1:2011，Clause 16：</strong>SGCB 在 LLN0、SP 下的 MMS 映射；参见 <a href="service-mapping.html">本站映射导读</a>。最终名称与类型按采用版次核对。</li>
+<li id="source-s3"><strong>[S3] Siemens Station Gateway for TIA Portal，2024-08：</strong><a href="https://cache.industry.siemens.com/dl/files/678/109820678/att_1297626/v1/Station__Gateway_for_TIA_Portal_en_2408_109820678.pdf">官方手册</a>展示 LLN0$SP$SGCB 实例；仅证明该产品文档用法，不推导全部设备行为。</li>
+<li id="source-s4"><strong>[S4] IEC Tissue 593，Setting Group Editing，In Force：</strong><a href="https://iec61850.tissue-db.com/tissues/593">工作组解决记录</a>涉及预约、断链、EditSG=0 取消和激活组确认后的重新激活；针对 Ed2 修订，不写成 2003 原文已有全部细节。</li>
+<li id="source-s5"><strong>[S5] IEC Tissue 845，SGCB ResvTms，In Force：</strong><a href="https://iec61850.tissue-db.com/tissues/845">能力标记澄清</a>区分 SGEdit 的在线可见性和 ConfSG 的配置能力。</li>
+<li id="source-s6"><strong>[S6] UCAIug Server Test Procedures，Ed2 Amendment 1，Rev1.3，2024：</strong><a href="https://redmine.ucaiug.org/attachments/download/3254/UCAITestProcedureServer61850-8-1Ed2Amd1_Rev1p3%28Released%29.pdf">官方规程</a>的 sSg 项，尤其 sSg4 断链、sSg5 预约；本次公开索引可核摘要，完整 PDF 访问受限。规程不证明某设备已通过测试。</li>
+<li id="source-s7"><strong>[S7] MZ Automation libiec61850：</strong><a href="https://support.mz-automation.de/doc/libiec61850/c/latest/group__IEC61850__SERVER__SETTING__GROUPS.html">服务端定值组官方 API</a>及<a href="https://support.mz-automation.de/doc/libiec61850/c/latest/structsSettingGroupControlBlock.html">SGCB 结构</a>。本次文档显示 1.6.0，latest 地址会更新，须核实际锁定栈版本。</li>
+<li id="source-s8"><strong>[S8] IEC 61850-7-2:2010/AMD1:2020，16.2/16.3：</strong>ResvTms 及关联恢复澄清。<a href="https://www.normsplash.com/Samples/AENOR/912741418/UNE-EN-61850-7-2-2010-A1-2020-en-2.pdf">AENOR 采用文本预览</a>仅作条款定位，不取代项目采用的正式文本。</li></ol>
+<h3>两网核验状态</h3><p>尚未获得可逐条对照的完整适用 Q/GDW、Q/CSG 企业规范及技术协议。“虚拟 31 区”属于未完成原始发布方核验的检索线索，未作为规范结论或命令依据；本页不从转载或专利推导两网强制流程。取得资料后应将第 8 节的待核验项替换为版本、条款和设备验证范围。</p>
+<p>继续阅读：<a href="cdc-setting.html">定值 CDC</a> · <a href="acsi-runtime-models.html#settings">SGCB 模型</a> · <a href="object-reference.html#mms">MMS 名称</a> · <a href="control-blocks-reference.html">控制块参考</a> · <a href="developer-data-contracts.html">开发数据契约</a> · <a href="symptom-troubleshooting.html">排障路径</a> · <a href="../index.html#search">术语检索</a></p></section>
+</main><footer class="footer">IEC 61850 离线知识库 · 原创教学流程 · 标准、项目规约与设备行为分别核对</footer><script src="../assets/navigation.js"></script></body></html>
