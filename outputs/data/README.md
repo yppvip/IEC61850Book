@@ -1,5 +1,13 @@
 # 离线百科数据格式
 
+## 报文解析教学数据
+
+`packet-examples.js` 将7个固定原创帧赋给 `window.IEC61850_PACKET_EXAMPLES`。每帧包含稳定id、label、hex、size、note和fields；字段记录start（从0起的十进制偏移）、length（包含TLV头的总字节数）、header（Tag/Length字节数）、depth、layer、dtype、value、meaning、scd、ws。嵌套字段区间允许包含；字节反查选择包含该字节的最小字段。脚本只展示预制数据，不解析用户输入。生成源为 `scripts/packet_examples.py`，执行 `scripts/build_packet_lessons.py` 同步静态正文/字段表/数据，禁止只改生成文件。
+
+`packet-demo.scd` 为原创部分模型；双ASDU变体仅改变nofASDU。18个FCDA可按实例/类型解析，但缺少完整标准必选对象及工程约束，不能当作已通过XSD或可投产工程。比例、相别、采样模式以网页教学契约为准；没有读取真实源SCD。
+
+`packet-terms.js` 在 `app.js` 前增补7个入口，按稳定 `packet-lesson-` ID更新，支持服务、计数、编码、SCD映射及容量的检索。运行时均以本地普通脚本加载，无网络请求。
+
 ## 对象引用专题数据
 
 `object-reference-terms.js` 在所有既有术语脚本之后、`app.js` 之前加载，按稳定 ID 增补 8 个专题入口。`object-reference-evidence.json` 保存指定 SCD 的 SHA-256、版本、统计和所选路径的源行；发布名称均为 Demo 别名，网页运行不请求该 JSON。由 `../../scripts/build_object_reference.py` 生成，正文模板在 `../../scripts/templates/object-reference.html`。只读源 SCD，不进行设备操作或完整模式校验。

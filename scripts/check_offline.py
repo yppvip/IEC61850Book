@@ -36,6 +36,7 @@ new+=part74
 learning=[p[0] for p in json.loads((OUT/'data/learning-pages.json').read_text(encoding='utf-8'))]
 new+=learning
 new+=['object-reference','setting-group-development','common-ld-datasets','nine-unifications']
+new+=['packet-analysis','packet-mms','packet-goose','packet-sv','packet-scd-mapping','packet-cases','packet-capacity']
 svg_count=xml_count=table_count=0
 for stem in new:
  path=OUT/'chapters'/f'{stem}.html';text=texts[path];table_count+=pages[path].tables
@@ -54,6 +55,7 @@ for stem in new:
   except ET.ParseError as exc:errors.append(f'{stem}: XML example {exc}')
 node=Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe'
 js="global.window={};require('./outputs/data/terms.js');require('./outputs/data/part72-terms.js');require('./outputs/data/part73-terms.js');"+("require('./outputs/data/part74-terms.js');" if part74 else '')+"require('./outputs/data/learning-terms.js');require('./outputs/data/object-reference-terms.js');require('./outputs/data/setting-group-terms.js');require('./outputs/data/protection-guides-terms.js');process.stdout.write(JSON.stringify(window.IEC61850_TERMS));"
+js=js.replace('process.stdout.write',"require('./outputs/data/packet-terms.js');process.stdout.write")
 terms=json.loads(subprocess.check_output([str(node),'-e',js],cwd=ROOT))
 ids=[t['id'] for t in terms]
 if len(ids)!=len(set(ids)):errors.append('duplicate term IDs')
@@ -72,6 +74,8 @@ for t in terms:
 for f in [OUT/'assets/navigation.js',OUT/'assets/home.js',OUT/'assets/app.js',OUT/'data/learning-terms.js',OUT/'data/part72-terms.js',OUT/'data/part73-terms.js',OUT/'data/object-reference-terms.js',OUT/'data/setting-group-terms.js',OUT/'data/protection-guides-terms.js']+([OUT/'assets/part74.js',OUT/'data/part74-terms.js'] if part74 else []):
  subprocess.run([str(node),'--check',str(f)],check=True)
 evidence=json.loads((OUT/'data/part72-evidence.json').read_text(encoding='utf-8'))
+for f in ['assets/packet-lessons.js','data/packet-examples.js','data/packet-terms.js']:
+ subprocess.run([str(node),'--check',str(OUT/f)],check=True)
 from part73_data import CDC,DICTIONARY,CONDITIONS
 part73_data=json.loads((OUT/'data/part73-evidence.json').read_text(encoding='utf-8'))
 expected={'baseline_cdc_count':29,'table49_unique_names':116,'unit_rows':58,'multiplier_prefixes':20,'fc_rows':18,'do_types':735}

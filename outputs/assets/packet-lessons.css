@@ -1,0 +1,16 @@
+.packet-workbench{border:1px solid var(--line);border-radius:10px;padding:14px;margin:16px 0;background:#f8fbfe;min-width:0}
+.packet-toolbar,.packet-layers,.packet-state-controls{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;align-items:center}
+.packet-workbench button,.packet-workbench select,.packet-state-controls button,.mapping-steps button{font:inherit;color:var(--navy);border:1px solid #a5bfd4;border-radius:5px;background:white;padding:6px 9px;cursor:pointer;max-width:100%}
+.packet-workbench button[aria-pressed="true"],.mapping-steps button[aria-pressed="true"]{background:#d9efff;border-color:#0876c9}
+.packet-workbench button:focus-visible,.mapping-steps button:focus-visible{outline:3px solid #c58a00;outline-offset:2px}
+.packet-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+.packet-hex{position:relative;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:3px;background:#122d45;padding:9px;border-radius:6px;max-height:430px;overflow:auto;align-content:start}
+.packet-hex button{color:#deefff;background:transparent;border:1px solid transparent;font:13px Consolas,monospace;padding:5px 0;min-width:0;border-radius:3px}
+.packet-hex button.selected{color:#092c46;background:#9dddff;border-color:#d0f2ff}
+.packet-hex button.changed{box-shadow:inset 0 -3px #f0a436}
+.packet-detail{background:white;padding:12px;border:1px solid var(--line);border-radius:6px;overflow-wrap:anywhere;min-height:210px}
+.packet-detail h3{margin-top:0}.packet-detail p{margin:7px 0}.packet-field-list{display:flex;gap:5px;flex-wrap:wrap;margin:12px 0;max-height:210px;overflow:auto}
+.reference-table td:first-child{min-width:90px}
+.packet-field-list button{font-size:12px;text-align:left}.packet-workbench pre{white-space:pre-wrap;overflow-wrap:anywhere}.packet-workbench .packet-field-table table{min-width:700px}
+.mapping-steps{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.mapping-detail{border-left:4px solid var(--blue);padding:12px;background:#eef7ff;overflow-wrap:anywhere}.packet-path{overflow-wrap:anywhere}.packet-state-status{padding:10px;background:#fff7df;border:1px solid #ead19a;border-radius:6px}.packet-legend{font-size:13px;color:var(--muted)}
+@media(max-width:760px){.packet-columns{grid-template-columns:1fr}.packet-workbench{padding:10px}.packet-hex{grid-template-columns:repeat(8,minmax(0,1fr));max-height:310px}.packet-detail{min-height:0}.packet-workbench button{min-height:32px}}

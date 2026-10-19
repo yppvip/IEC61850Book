@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SCD 与报文的双向映射｜IEC 61850 离线知识库</title><link rel="stylesheet" href="../assets/style.css"><link rel="stylesheet" href="../assets/packet-lessons.css"></head><body><header class="top"><div class="chapter-nav"><a href="../index.html">返回首页</a> · <a href="packet-analysis.html">报文解析上级目录</a></div><div class="chapter"><h1>SCD 与报文的双向映射</h1><p>配置 → 信号 → 编码 → 字段 → 工程证据</p></div></header><main class="chapter"><noscript><nav class="breadcrumb" aria-label="面包屑"><a href="../index.html">首页</a> → <a href="packet-analysis.html">报文解析</a></nav></noscript><p class="notice">本模块使用原创、脱敏、固定教学案例。页面只在本地切换示例和高亮字节；不读取用户抓包、不发送报文。XML 为保留引用链的部分模型，不等同于完整可投产 SCD、设备手册或标准原文。能解释本例不等于完成独立现场分析能力或符合性验证。</p><section><h2 id="model">1. 共同的原创配置与类型链</h2><p>案例文件 <a href="../data/packet-demo.scd">packet-demo.scd</a> 是保留实例、类型、数据集、控制块和Communication的原创部分模型；XML可读取，但省略标准必选公共对象、完整网络/授时与能力声明等，不作为XSD合格工程。本例所有IED/IP/MAC均人工编写；未读取真实工程来推断业务。</p><pre><code>Demo / AP1 / LD0 / XCBR1 [lnType=DemoXCBR]
+  LNodeType DemoXCBR → DO Pos [type=DemoDPC]
+  DOType DemoDPC [cdc=DPC]
+    stVal: Dbpos, FC=ST → GOOSE/MMS BIT STRING 2有效位
+    q: Quality, FC=ST → GOOSE BIT STRING 13有效位
+Demo / AP1 / SV0 / TCTR1 [lnType=DemoTCTR]
+  DO Amp [type=DemoSAV, cdc=SAV]
+    instMag: Struct, FC=MX → DAType DemoAnalogue / i: INT32
+    q: Quality, FC=MX → SV 4字节映射容器</code></pre><p>IED名不是一定等于MMS域名。常规LDName由IED名和ldInst形成，显式LDevice@ldName等情况按适用版本/模型核对。prefixed LN、SDO、BDA、数组或整个FCD都需沿类型展开；本例只演示无数组的明示标量路径。</p></section><section><h2 id="forward">2. GOOSE 正向映射：逐步点击证据链</h2><div data-mapping><p class="mapping-detail" data-label="SCD / 实例"><b>SCD / 实例：</b>Demo/AP1 → LDevice LD0 → XCBR1.Pos.stVal；实例lnType=DemoXCBR → DO Pos type=DemoDPC → DA stVal bType=Dbpos, fc=ST。</p><p class="mapping-detail" data-label="DataSet"><b>DataSet：</b>LN0/DataSet@name=dsPos，FCDA[1]=Pos.stVal，FCDA[2]=Pos.q。这里2个标量成员；若删daName改FCD必须重新展开类型。</p><p class="mapping-detail" data-label="Control Block"><b>Control Block：</b>LN0/GSEControl@name=gcbPos, datSet=dsPos, confRev=1, appID=DemoPos；运行时GoCB引用DemoLD0/LLN0$GO$gcbPos。</p><p class="mapping-detail" data-label="Communication"><b>Communication：</b>ConnectedAP iedName=Demo apName=AP1 → GSE ldInst=LD0 cbName=gcbPos → Address APPID=1001(十六进制)、目的MAC。</p><p class="mapping-detail" data-label="报文字段"><b>报文字段：</b>gocbRef=DemoLD0/LLN0$GO$gcbPos，datSet=DemoLD0/LLN0$dsPos，goID=DemoPos，APPID=0x1001，allData[1]=84 02 06 80(合位)。</p><p class="mapping-detail" data-label="反查信号"><b>反查信号：</b>用发布身份与引用定位唯一控制块，再取dsPos顺序和DemoDPC类型，才能将allData第1项称为本例XCBR1.Pos.stVal。订阅方业务还需Inputs/ExtRef和内部逻辑证据。</p></div><pre data-language="xml"><code>&lt;GSEControl name=&quot;gcbPos&quot; type=&quot;GOOSE&quot; appID=&quot;DemoPos&quot; datSet=&quot;dsPos&quot; confRev=&quot;1&quot;/&gt;</code></pre><p>控制块的同名匹配要带上IED/AP/LD/LN作用域，不能只搜索字符串gcbPos。GSE@cbName指控制块名，GSE@ldInst指其所属LD；datSet是发布LN作用域中的数据集名，不是Communication路径。</p></section><section><h2 id="sv-forward">3. SV 正向映射：不能在每帧找到所有配置</h2><p>Demo/AP1/SV0/LLN0/DataSet dsSV（16 FCDA）→ SampledValueControl smv01 → SMV ldInst=SV0 cbName=smv01 → APPID=4001与目的MAC → 帧svID=DemoSV1、confRev=1、noASDU=1 → seqData按16个标量成员/八通道解释。datSet字符串与smpRate在此例没有发送，因此不能从Hex中凭空读出它们。</p><pre data-language="xml"><code>&lt;SampledValueControl name=&quot;smv01&quot; smvID=&quot;DemoSV1&quot; datSet=&quot;dsSV&quot; confRev=&quot;1&quot; multicast=&quot;true&quot; smpRate=&quot;80&quot; nofASDU=&quot;1&quot;&gt;
+  &lt;SmvOpts refreshTime=&quot;false&quot; sampleSynchronized=&quot;true&quot; sampleRate=&quot;false&quot; dataSet=&quot;false&quot; security=&quot;false&quot;/&gt;
+&lt;/SampledValueControl&gt;</code></pre><p>nofASDU是每帧聚合数，不是DataSet成员数。SMV和SampledValueControl是两个不同配置位置；SmvOpts.dataSet是控制是否传输引用的选项，不能把不含datSet的流当成没有数据集。</p></section><section><h2 id="mms-forward">4. MMS 对象映射与报告链的分支</h2><p>直接读：DemoLD0/XCBR1.Pos.stVal [ST] → domain DemoLD0 / item XCBR1$ST$Pos$stVal → ReadRequest → invokeID=1同关联响应 → Dbpos=on。服务端AP/IP配置帮助定位连接，但运行时目录、协商与访问权限仍要查。</p><p>报告：同一dsPos还被ReportControl brcbPos引用 → 运行时BRCB与使能 → InformationReport。它不是gcbPos，也不因为数据集相同而自动发送GOOSE。必须查真实RptID、OptFlds、inclusion、confRev、分段与控制块状态；报告中的可选DataRef不是每帧必带。</p></section><section><h2 id="reverse">5. 从 Wireshark 反查 SCD：匹配组合，而非猜名字</h2><div class="reference-table"><table><thead><tr><th scope="col">观察事实</th><th scope="col">反查路径</th><th scope="col">还缺的证据</th></tr></thead><tbody><tr><td>GOOSE APPID1001 + gocbRef DemoLD0/LLN0$GO$gcbPos + datSet</td><td>Communication/ConnectedAP/GSE → IED/AP/LD/LN0/GSEControl → dsPos → FCDA与类型</td><td>检查MAC/VLAN、confRev和配置版本；接收Inputs/ExtRef与实际内部映射</td></tr><tr><td>SV APPID4001 + svID DemoSV1 + confRev1</td><td>SMV网络对象 → SampledValueControl smv01 → dsSV → 声明的值/q顺序</td><td>确认布局、比例、同步模式；没有datSet字符串时不能只凭APPID命名通道</td></tr><tr><td>MMS Read domain DemoLD0 + item XCBR1$ST$Pos$stVal</td><td>已确认服务器/AP → LDName → LN XCBR1 → FC ST → Pos.stVal → 类型</td><td>关联上下文、动态模型/目录及当前权限；响应按请求结果位置配对</td></tr><tr><td>InformationReport只含部分值</td><td>RptID/可选DataSet、DataRef/配置版本与inclusion → RCB/DataSet</td><td>运行时使能/触发、缓冲与分段；相同RptID候选需进一步消歧</td></tr></tbody></table></div><p>APPID只在其通信与工程上下文中帮助筛选，不能保证跨子网/多工程全局唯一。发现同名、重复APPID、不同confRev或SCD版本不明，应列出候选和冲突，暂停语义归属。源MAC可能因冗余/实现影响，不能反推厂家功能或跳闸对象。SCD描述预期，抓包描述观测，两者不一致时都不是自动的最终真相。</p></section><section><h2 id="scd-fragment">6. 查看完整部分模型与下一个核对点</h2><details><summary>展开原创 SCL 部分模型（含全部16个SV成员与类型模板）</summary><pre data-language="xml"><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;!-- Original partial SCL teaching model. XML well-formed; not a complete XSD-conformant or deployable SCD. --&gt;
+&lt;SCL xmlns=&quot;http://www.iec.ch/61850/2003/SCL&quot; version=&quot;2007&quot; revision=&quot;B&quot; release=&quot;4&quot;&gt;
+  &lt;Header id=&quot;PacketTeachingOnly&quot;/&gt;
+  &lt;Communication&gt;
+    &lt;SubNetwork name=&quot;DemoNet&quot; type=&quot;8-MMS&quot;&gt;
+      &lt;ConnectedAP iedName=&quot;Demo&quot; apName=&quot;AP1&quot;&gt;
+        &lt;Address&gt;&lt;P type=&quot;IP&quot;&gt;192.0.2.20&lt;/P&gt;&lt;/Address&gt;
+        &lt;GSE ldInst=&quot;LD0&quot; cbName=&quot;gcbPos&quot;&gt;
+          &lt;Address&gt;&lt;P type=&quot;MAC-Address&quot;&gt;01-0C-CD-01-00-01&lt;/P&gt;&lt;P type=&quot;APPID&quot;&gt;1001&lt;/P&gt;&lt;/Address&gt;
+          &lt;MinTime unit=&quot;s&quot; multiplier=&quot;m&quot;&gt;4&lt;/MinTime&gt;&lt;MaxTime unit=&quot;s&quot; multiplier=&quot;m&quot;&gt;1000&lt;/MaxTime&gt;
+        &lt;/GSE&gt;
+        &lt;SMV ldInst=&quot;SV0&quot; cbName=&quot;smv01&quot;&gt;
+          &lt;Address&gt;&lt;P type=&quot;MAC-Address&quot;&gt;01-0C-CD-04-00-01&lt;/P&gt;&lt;P type=&quot;APPID&quot;&gt;4001&lt;/P&gt;&lt;/Address&gt;
+        &lt;/SMV&gt;
+      &lt;/ConnectedAP&gt;
+    &lt;/SubNetwork&gt;
+  &lt;/Communication&gt;
+  &lt;IED name=&quot;Demo&quot;&gt;
+    &lt;AccessPoint name=&quot;AP1&quot;&gt;&lt;Server&gt;
+      &lt;LDevice inst=&quot;LD0&quot;&gt;
+        &lt;LN0 lnClass=&quot;LLN0&quot; inst=&quot;&quot; lnType=&quot;DemoLLN0&quot;&gt;
+          &lt;DataSet name=&quot;dsPos&quot;&gt;
+            &lt;FCDA ldInst=&quot;LD0&quot; prefix=&quot;&quot; lnClass=&quot;XCBR&quot; lnInst=&quot;1&quot; doName=&quot;Pos&quot; daName=&quot;stVal&quot; fc=&quot;ST&quot;/&gt;
+            &lt;FCDA ldInst=&quot;LD0&quot; prefix=&quot;&quot; lnClass=&quot;XCBR&quot; lnInst=&quot;1&quot; doName=&quot;Pos&quot; daName=&quot;q&quot; fc=&quot;ST&quot;/&gt;
+          &lt;/DataSet&gt;
+          &lt;GSEControl name=&quot;gcbPos&quot; type=&quot;GOOSE&quot; appID=&quot;DemoPos&quot; datSet=&quot;dsPos&quot; confRev=&quot;1&quot;/&gt;
+          &lt;ReportControl name=&quot;brcbPos&quot; rptID=&quot;DemoPosReport&quot; datSet=&quot;dsPos&quot; confRev=&quot;1&quot; buffered=&quot;true&quot; bufTime=&quot;0&quot;&gt;
+            &lt;TrgOps dchg=&quot;true&quot; qchg=&quot;true&quot;/&gt;&lt;OptFields seqNum=&quot;true&quot; dataSet=&quot;true&quot; reasonCode=&quot;true&quot;/&gt;
+          &lt;/ReportControl&gt;
+        &lt;/LN0&gt;
+        &lt;LN lnClass=&quot;XCBR&quot; inst=&quot;1&quot; prefix=&quot;&quot; lnType=&quot;DemoXCBR&quot;/&gt;
+      &lt;/LDevice&gt;
+      &lt;LDevice inst=&quot;SV0&quot;&gt;
+        &lt;LN0 lnClass=&quot;LLN0&quot; inst=&quot;&quot; lnType=&quot;DemoLLN0&quot;&gt;
+          &lt;DataSet name=&quot;dsSV&quot;&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TCTR&quot; lnInst=&quot;1&quot; doName=&quot;Amp&quot; daName=&quot;instMag.i&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TCTR&quot; lnInst=&quot;1&quot; doName=&quot;Amp&quot; daName=&quot;q&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TCTR&quot; lnInst=&quot;2&quot; doName=&quot;Amp&quot; daName=&quot;instMag.i&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TCTR&quot; lnInst=&quot;2&quot; doName=&quot;Amp&quot; daName=&quot;q&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TCTR&quot; lnInst=&quot;3&quot; doName=&quot;Amp&quot; daName=&quot;instMag.i&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TCTR&quot; lnInst=&quot;3&quot; doName=&quot;Amp&quot; daName=&quot;q&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TCTR&quot; lnInst=&quot;4&quot; doName=&quot;Amp&quot; daName=&quot;instMag.i&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TCTR&quot; lnInst=&quot;4&quot; doName=&quot;Amp&quot; daName=&quot;q&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TVTR&quot; lnInst=&quot;1&quot; doName=&quot;Vol&quot; daName=&quot;instMag.i&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TVTR&quot; lnInst=&quot;1&quot; doName=&quot;Vol&quot; daName=&quot;q&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TVTR&quot; lnInst=&quot;2&quot; doName=&quot;Vol&quot; daName=&quot;instMag.i&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TVTR&quot; lnInst=&quot;2&quot; doName=&quot;Vol&quot; daName=&quot;q&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TVTR&quot; lnInst=&quot;3&quot; doName=&quot;Vol&quot; daName=&quot;instMag.i&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TVTR&quot; lnInst=&quot;3&quot; doName=&quot;Vol&quot; daName=&quot;q&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TVTR&quot; lnInst=&quot;4&quot; doName=&quot;Vol&quot; daName=&quot;instMag.i&quot; fc=&quot;MX&quot;/&gt;
+            &lt;FCDA ldInst=&quot;SV0&quot; lnClass=&quot;TVTR&quot; lnInst=&quot;4&quot; doName=&quot;Vol&quot; daName=&quot;q&quot; fc=&quot;MX&quot;/&gt;
+          &lt;/DataSet&gt;
+          &lt;SampledValueControl name=&quot;smv01&quot; smvID=&quot;DemoSV1&quot; datSet=&quot;dsSV&quot; confRev=&quot;1&quot; multicast=&quot;true&quot; smpRate=&quot;80&quot; nofASDU=&quot;1&quot;&gt;
+            &lt;SmvOpts refreshTime=&quot;false&quot; sampleSynchronized=&quot;true&quot; sampleRate=&quot;false&quot; dataSet=&quot;false&quot; security=&quot;false&quot;/&gt;
+          &lt;/SampledValueControl&gt;
+        &lt;/LN0&gt;
+        &lt;LN lnClass=&quot;TCTR&quot; inst=&quot;1&quot; lnType=&quot;DemoTCTR&quot;/&gt;&lt;LN lnClass=&quot;TCTR&quot; inst=&quot;2&quot; lnType=&quot;DemoTCTR&quot;/&gt;
+        &lt;LN lnClass=&quot;TCTR&quot; inst=&quot;3&quot; lnType=&quot;DemoTCTR&quot;/&gt;&lt;LN lnClass=&quot;TCTR&quot; inst=&quot;4&quot; lnType=&quot;DemoTCTR&quot;/&gt;
+        &lt;LN lnClass=&quot;TVTR&quot; inst=&quot;1&quot; lnType=&quot;DemoTVTR&quot;/&gt;&lt;LN lnClass=&quot;TVTR&quot; inst=&quot;2&quot; lnType=&quot;DemoTVTR&quot;/&gt;
+        &lt;LN lnClass=&quot;TVTR&quot; inst=&quot;3&quot; lnType=&quot;DemoTVTR&quot;/&gt;&lt;LN lnClass=&quot;TVTR&quot; inst=&quot;4&quot; lnType=&quot;DemoTVTR&quot;/&gt;
+      &lt;/LDevice&gt;
+    &lt;/Server&gt;&lt;/AccessPoint&gt;
+  &lt;/IED&gt;
+  &lt;DataTypeTemplates&gt;
+    &lt;LNodeType id=&quot;DemoLLN0&quot; lnClass=&quot;LLN0&quot;/&gt;
+    &lt;LNodeType id=&quot;DemoXCBR&quot; lnClass=&quot;XCBR&quot;&gt;&lt;DO name=&quot;Pos&quot; type=&quot;DemoDPC&quot;/&gt;&lt;/LNodeType&gt;
+    &lt;LNodeType id=&quot;DemoTCTR&quot; lnClass=&quot;TCTR&quot;&gt;&lt;DO name=&quot;Amp&quot; type=&quot;DemoSAV&quot;/&gt;&lt;/LNodeType&gt;
+    &lt;LNodeType id=&quot;DemoTVTR&quot; lnClass=&quot;TVTR&quot;&gt;&lt;DO name=&quot;Vol&quot; type=&quot;DemoSAV&quot;/&gt;&lt;/LNodeType&gt;
+    &lt;DOType id=&quot;DemoDPC&quot; cdc=&quot;DPC&quot;&gt;&lt;DA name=&quot;stVal&quot; bType=&quot;Dbpos&quot; fc=&quot;ST&quot; dchg=&quot;true&quot;/&gt;&lt;DA name=&quot;q&quot; bType=&quot;Quality&quot; fc=&quot;ST&quot; qchg=&quot;true&quot;/&gt;&lt;DA name=&quot;t&quot; bType=&quot;Timestamp&quot; fc=&quot;ST&quot;/&gt;&lt;/DOType&gt;
+    &lt;DOType id=&quot;DemoSAV&quot; cdc=&quot;SAV&quot;&gt;&lt;DA name=&quot;instMag&quot; bType=&quot;Struct&quot; type=&quot;DemoAnalogue&quot; fc=&quot;MX&quot;/&gt;&lt;DA name=&quot;q&quot; bType=&quot;Quality&quot; fc=&quot;MX&quot;/&gt;&lt;DA name=&quot;t&quot; bType=&quot;Timestamp&quot; fc=&quot;MX&quot;/&gt;&lt;/DOType&gt;
+    &lt;DAType id=&quot;DemoAnalogue&quot;&gt;&lt;BDA name=&quot;i&quot; bType=&quot;INT32&quot;/&gt;&lt;/DAType&gt;
+  &lt;/DataTypeTemplates&gt;
+&lt;/SCL&gt;
+</code></pre></details><p>本例未配置接收方Inputs/ExtRef，因此只能证明声明的发布链；不能证明任何接收端已经订阅、投运或使用这些值。配置完整性与现场业务链应回到 <a href="engineering-model-reading.html">工程证据检查</a>。</p></section><section><h2 id="sources">来源、版次与适用范围</h2><p>版次与来源边界：以项目既有早期 IEC 61850-8-1 中文资料的传统 MMS/GOOSE 映射为起点，并参照公开解码器 ASN.1 定义核对结构；SV 采用明确声明的 9-2 八通道 INT32/Quality 教学布局。它不是跨版次唯一实现，也不宣称完整符合 9-2LE 或 IEC 61869-9。本地9-2为DL/T 860.92—2006扫描件，本次视觉复核PDF第16～17页（印刷第12～13页）表13/14的容器及基础类型；早期smpSynch为BOOLEAN，本例按较新版公开解码定义的0/1/2枚举解释，1表示local，不能混用。7-2扫描件未逐条核验。公开解码器是交叉核对资料，不能替代适用版次标准。</p>
+<p>职责：IEC 61850-6 管配置与交换；7-2 定义 ACSI（Abstract Communication Service Interface，抽象通信服务接口）；7-3 定义 CDC（Common Data Class，公用数据类）；7-4 定义 LN（Logical Node，逻辑节点）及数据对象；8-1 将服务映射到 MMS/传统 GOOSE；9-2 定义 SV 以太网映射。ISO 9506 定义 MMS（Manufacturing Message Specification，制造报文规范）；ASN.1（Abstract Syntax Notation One）描述结构；BER（Basic Encoding Rules）将结构编码为字节。IEC 62351 安全扩展不在本例内。</p>
+<p>可选在线追溯（离线阅读不依赖链接）：<a href="https://webstore.iec.ch/en/publication/6028">IEC 标准体系目录</a> · <a href="https://www.itu.int/rec/T-REC-X.690-202102-I/en">ITU-T X.690 BER 规则</a> · <a href="https://raw.githubusercontent.com/wireshark/wireshark/master/epan/dissectors/asn1/mms/mms.asn">Wireshark MMS ASN.1</a> · <a href="https://raw.githubusercontent.com/wireshark/wireshark/master/epan/dissectors/asn1/goose/goose.asn">GOOSE ASN.1</a> · <a href="https://raw.githubusercontent.com/wireshark/wireshark/master/epan/dissectors/asn1/sv/sv.asn">SV ASN.1</a>。</p><p>显示字段名按公开 Wireshark 参考核对：<a href="https://www.wireshark.org/docs/dfref/m/mms.html">MMS</a> · <a href="https://www.wireshark.org/docs/dfref/g/goose.html">GOOSE</a> · <a href="https://www.wireshark.org/docs/dfref/s/sv.html">SV</a>。具体版本、偏好、上下文可能改变节点名或是否解码；本模块未调用 Wireshark 引擎解码这些合成帧。</p></section><section><h2 id="continue">继续阅读</h2><p><a href="packet-analysis.html">报文解析总览</a> · <a href="packet-mms.html">MMS：从对象到请求与响应</a> · <a href="packet-goose.html">GOOSE：从状态到二层事件帧</a> · <a href="packet-sv.html">SV：从采样到 ASDU</a> · <a href="packet-cases.html">完整案例与分析练习</a> · <a href="packet-capacity.html">一个报文能装多少信号</a> · </p></section></main><footer class="foot">原创教学材料 · <a href="packet-analysis.html">报文解析总览</a> · <a href="../index.html">首页术语搜索</a></footer><script src="../assets/navigation.js"></script><script src="../data/packet-examples.js"></script><script src="../assets/packet-lessons.js"></script></body></html>

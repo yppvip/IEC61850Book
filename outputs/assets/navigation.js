@@ -334,11 +334,48 @@
         "service-mapping.html",
         "特定通信服务映射与报文格式",
         "先服务后字段"
-      ],
+      ]
+    ]
+  },
+  {
+    "id": "packets",
+    "label": "报文解析",
+    "entry": "packet-analysis.html",
+    "items": [
       [
         "packet-analysis.html",
-        "协议字段阅读",
-        "先服务后字段"
+        "报文解析总览",
+        "入门与三类报文"
+      ],
+      [
+        "packet-mms.html",
+        "MMS：从对象到请求与响应",
+        "入门与三类报文"
+      ],
+      [
+        "packet-goose.html",
+        "GOOSE：从状态到二层事件帧",
+        "入门与三类报文"
+      ],
+      [
+        "packet-sv.html",
+        "SV：从采样到 ASDU",
+        "入门与三类报文"
+      ],
+      [
+        "packet-scd-mapping.html",
+        "SCD 与报文的双向映射",
+        "配置、案例与约束"
+      ],
+      [
+        "packet-cases.html",
+        "完整案例与分析练习",
+        "配置、案例与约束"
+      ],
+      [
+        "packet-capacity.html",
+        "一个报文能装多少信号",
+        "配置、案例与约束"
       ]
     ]
   },
@@ -424,7 +461,7 @@
       return `<details class="tree-block" ${!current || items.some(([file]) => file === current) ? 'open' : ''}><summary>${block}</summary><ul>${items.map(([file,label]) => `<li><a class="${file === current ? 'current' : ''}" href="${prefix}${file}" ${file === current ? 'aria-current="page"' : ''}>${label}</a></li>`).join('')}</ul></details>`;
     }).join('')}</details>`;
   }
-  const learningOrder = ['learning-path','electrical-fundamentals','primary-diagrams','primary-and-roles','measurement-chain','protection-control-fundamentals','protection-ied-guide','bay-and-automation-levels','three-level-two-network','core-concept-comparisons','acsi-abstraction','ied-data-model','object-reference','data-attributes-reference','cdc-common-types','control-input-models','engineering-files','scd-in-ten-minutes','scd-reading-toolbox','annotated-xml-examples','control-blocks-reference','communication-process','acsi-services','service-mapping','packet-analysis','developer-data-contracts','setting-group-development','feeder-learning-case','engineering-model-reading','engineering-practice','symptom-troubleshooting','safety-and-test-boundaries'];
+  const learningOrder = ['learning-path','electrical-fundamentals','primary-diagrams','primary-and-roles','measurement-chain','protection-control-fundamentals','protection-ied-guide','bay-and-automation-levels','three-level-two-network','core-concept-comparisons','acsi-abstraction','ied-data-model','object-reference','data-attributes-reference','cdc-common-types','control-input-models','engineering-files','scd-in-ten-minutes','scd-reading-toolbox','annotated-xml-examples','control-blocks-reference','communication-process','acsi-services','service-mapping','packet-analysis','packet-mms','packet-goose','packet-sv','packet-scd-mapping','packet-cases','packet-capacity','developer-data-contracts','setting-group-development','feeder-learning-case','engineering-model-reading','engineering-practice','symptom-troubleshooting','safety-and-test-boundaries'];
   window.IEC61850_NAV = { groups, tree, learningOrder };
 
   const chapter = document.querySelector('main.chapter');
